@@ -1,0 +1,19 @@
+{% extends "gestion/base.html" %}
+{% block titre %}Mesures{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-4 text-gray-800">Mesures</h1>
+<div class="card shadow mb-4"><div class="card-body"><div class="table-responsive">
+<table class="table table-bordered" id="dataTable" width="100%">
+    <thead><tr><th>Client</th><th>Téléphone</th><th>Longueur</th><th>Épaule</th><th>Cou</th><th>Manche</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for m in mesures %}
+    <tr>
+        <td>{{ m.prenom_nom }}</td><td>{{ m.telephone }}</td><td>{{ m.longueur }}</td>
+        <td>{{ m.epaule }}</td><td>{{ m.cou }}</td><td>{{ m.manche }}</td>
+        <td><a href="{% url 'mesure_modif' m.id_mesure %}"><i class="fas fa-edit"></i></a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div></div></div>
+{% endblock %}

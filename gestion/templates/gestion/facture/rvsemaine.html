@@ -1,0 +1,22 @@
+{% extends "gestion/base.html" %}
+{% block titre %}RV de la semaine{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-4 text-gray-800">Rendez-vous (échéances) de la semaine</h1>
+<div class="card shadow mb-4"><div class="card-body">
+<form method="POST" class="form-inline mb-3">{% csrf_token %}
+    <label class="mr-2">Du</label><input type="date" name="datedeb" value="{{ datedeb }}" class="form-control mr-2" required>
+    <label class="mr-2">Au</label><input type="date" name="datefin" value="{{ datefin }}" class="form-control mr-2" required>
+    <button class="btn btn-primary">Afficher</button>
+</form>
+<div class="table-responsive">
+<table class="table table-bordered" id="dataTable" width="100%">
+    <thead><tr><th>N° Facture</th><th>Client</th><th>Téléphone</th><th>Date facture</th><th>Échéance</th></tr></thead>
+    <tbody>
+    {% for f in factures %}
+    <tr><td>{{ f.numero_facture }}</td><td>{{ f.prenom_nom }}</td><td>{{ f.telephone }}</td>
+        <td>{{ f.date_facture }}</td><td>{{ f.date_echeance }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div></div></div>
+{% endblock %}

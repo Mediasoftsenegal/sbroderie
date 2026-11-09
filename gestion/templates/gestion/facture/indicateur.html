@@ -1,0 +1,62 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Indicateur{% endblock %}
+{% block contenu %}
+<div class="mb-4">
+    <h1 class="h3 mb-1 text-gray-800">Indicateur</h1>
+    <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Facturation</span> <i class="fas fa-chevron-right"></i> <span>Indicateur</span></nav>
+</div>
+<form method="GET" class="form-inline mb-3">
+    <label class="mr-2 font-weight-bold">Année</label>
+    <select name="annee" class="form-control" onchange="this.form.submit()">
+        {% for an in annees %}<option value="{{ an }}" {% if an == annee %}selected{% endif %}>{{ an }}</option>{% endfor %}
+    </select>
+</form>
+
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-warning"><i class="fas fa-hourglass-half"></i></div>
+        <div class="stat-label">Factures non soldées</div><div class="stat-value">{{ kpi.nb }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-primary"><i class="fas fa-file-invoice"></i></div>
+        <div class="stat-label">Montant total</div><div class="stat-value">{{ kpi.facture|fcfa }} <small>F</small></div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-success"><i class="fas fa-hand-holding-usd"></i></div>
+        <div class="stat-label">Déjà encaissé</div><div class="stat-value">{{ kpi.encaisse|fcfa }} <small>F</small></div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon" style="background:var(--sbm-primary-soft);color:var(--sbm-primary);"><i class="fas fa-wallet"></i></div>
+        <div class="stat-label">Reste à encaisser</div><div class="stat-value">{{ kpi.reste|fcfa }} <small>F</small></div>
+    </div></div></div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Factures non soldées</h6></div>
+    <div class="card-body"><div class="table-responsive">
+    <table class="table" id="dataTable" width="100%">
+        <thead><tr><th>N° Facture</th><th>Client</th><th>Montant</th><th>Encaissé</th><th>Remise</th><th>Reliquat</th></tr></thead>
+        <tbody>
+        {% for f in factures %}
+        <tr>
+            <td class="font-weight-bold" {% if not f.equilibre %}style="background-color:#ff9800;color:#fff;" title="Déséquilibre : montant ≠ encaissé + remise"{% endif %}>{{ f.numero_facture }}</td>
+            <td><div class="d-flex align-items-center"><span class="avatar {% cycle 'av1' 'av2' 'av3' 'av4' 'av5' %}">{{ f.prenom_nom|initiales }}</span><span class="ml-2 cust-name">{{ f.prenom_nom }}</span></div></td>
+            <td class="mono-amount">{{ f.montant_facture|fcfa }}</td>
+            <td class="mono-amount">{{ f.cumul_paye|fcfa }}</td>
+            <td class="mono-amount">{{ f.remise|fcfa }}</td>
+            <td class="mono-amount">{{ f.reliquat|fcfa }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot><tr class="font-weight-bold">
+            <th colspan="2">TOTAL</th>
+            <th class="mono-amount">{{ kpi.facture|fcfa }} F</th>
+            <th class="mono-amount">{{ kpi.encaisse|fcfa }} F</th>
+            <th class="mono-amount">{{ kpi.remise|fcfa }} F</th>
+            <th class="mono-amount">{{ kpi.reste|fcfa }} F</th>
+        </tr></tfoot>
+    </table>
+    </div></div>
+</div>
+{% endblock %}

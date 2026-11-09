@@ -1,0 +1,20 @@
+{% extends "gestion/base.html" %}
+{% block titre %}Ajout mesure{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-4 text-gray-800">Mesures du client : {{ cli.prenom_nom }}</h1>
+<div class="card shadow mb-4"><div class="card-body">
+<form method="POST" action="{% url 'mesure_insert' %}">{% csrf_token %}
+<input type="hidden" name="id_client" value="{{ cli.id_client }}">
+<input type="hidden" name="genre" value="{{ cli.genre }}">
+<input type="hidden" name="telephone" value="{{ cli.telephone }}">
+<div class="row">
+{% for f in champs %}
+    <div class="col-md-3"><div class="form-group"><label>{{ f.1 }}</label>
+        <input type="text" name="{{ f.0 }}" class="form-control"></div></div>
+{% endfor %}
+</div>
+<button type="submit" class="btn btn-success" name="bt_mesure">Enregistrer</button>
+<a href="{% url 'clients' %}" class="btn btn-secondary">Retour</a>
+</form>
+</div></div>
+{% endblock %}

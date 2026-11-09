@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Sénégal Broderie Moderne - Connexion</title>
+    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        html, body { height: 100%; margin: 0; font-family: 'Nunito', sans-serif; }
+        body {
+            display: flex; align-items: center; justify-content: center; padding: 24px;
+            background: linear-gradient(135deg, rgba(15,23,42,.45), rgba(23,37,66,.38)),
+                        url("{% static 'img/fon.jpg' %}") center/cover fixed no-repeat;
+        }
+        .login-card {
+            width: 100%; max-width: 980px; display: grid; grid-template-columns: 1fr 1fr;
+            border-radius: 26px; overflow: hidden;
+            background: rgba(23, 33, 58, 0.66);
+            border: 1px solid rgba(255,255,255,.10);
+            box-shadow: 0 30px 70px rgba(0,0,0,.45);
+            -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+        }
+        /* --- Colonne gauche : présentation --- */
+        .side-info {
+            padding: 52px 46px; color: #eef1f8; position: relative;
+            background: linear-gradient(160deg, rgba(231,74,59,.20), rgba(23,33,58,.05));
+        }
+        .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 40px; }
+        .brand img { height: 52px; width: 52px; border-radius: 12px; object-fit: cover;
+            box-shadow: 0 6px 18px rgba(0,0,0,.35); }
+        .brand span { font-weight: 800; font-size: 1.15rem; letter-spacing: .5px; line-height: 1.1; }
+        .side-info h2 { font-size: 2rem; font-weight: 800; margin: 0 0 12px; line-height: 1.15; }
+        .side-info p.lead { color: #b9c2d6; font-size: .98rem; line-height: 1.6; margin: 0 0 30px; }
+        .feature { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+        .feature .ic { width: 42px; height: 42px; border-radius: 12px; flex: 0 0 42px;
+            display: flex; align-items: center; justify-content: center; font-size: 1rem;
+            background: rgba(255,255,255,.08); color: #ff8f86; }
+        .feature b { display: block; font-size: .95rem; color: #f4f6fb; }
+        .feature small { color: #96a1b8; }
+        /* --- Colonne droite : formulaire --- */
+        .side-form { padding: 52px 46px; background: rgba(13, 20, 38, 0.55); }
+        .side-form h1 { font-size: 2rem; font-weight: 800; color: #fff; margin: 0 0 6px; }
+        .side-form .sub { color: #96a1b8; font-size: .95rem; margin: 0 0 30px; }
+        .field { margin-bottom: 22px; }
+        .field label { display: block; color: #c8d0e0; font-size: .85rem; font-weight: 700;
+            margin-bottom: 8px; }
+        .input-wrap { position: relative; }
+        .input-wrap .lic { position: absolute; top: 50%; left: 16px; transform: translateY(-50%);
+            color: #7c88a3; font-size: .95rem; }
+        .input-wrap input {
+            width: 100%; padding: 14px 46px; border-radius: 12px; font-size: .95rem;
+            color: #f1f4fa; background: rgba(255,255,255,.05);
+            border: 1px solid rgba(255,255,255,.12); transition: border .2s, background .2s;
+        }
+        .input-wrap input::placeholder { color: #6f7b95; }
+        .input-wrap input:focus { outline: none; border-color: #ef5b6b;
+            background: rgba(255,255,255,.08); }
+        .toggle-pw { position: absolute; top: 50%; right: 14px; transform: translateY(-50%);
+            background: none; border: none; color: #7c88a3; cursor: pointer; font-size: .95rem; }
+        .btn-login {
+            width: 100%; padding: 14px; border: none; border-radius: 12px; cursor: pointer;
+            background: #ef4d5a; color: #fff; font-weight: 800; font-size: 1rem; letter-spacing: .3px;
+            box-shadow: 0 12px 26px rgba(239,77,90,.35); transition: background .2s, transform .05s;
+        }
+        .btn-login:hover { background: #e23948; }
+        .btn-login:active { transform: translateY(1px); }
+        .form-hint { color: #6f7b95; font-size: .8rem; margin-top: 8px; }
+        .alert-err { background: rgba(231,74,59,.15); border: 1px solid rgba(231,74,59,.5);
+            color: #ffb3ac; padding: 12px 14px; border-radius: 12px; font-size: .88rem;
+            margin-bottom: 22px; }
+        .foot { text-align: center; color: #7c88a3; font-size: .82rem; margin-top: 28px; }
+        @media (max-width: 800px) {
+            .login-card { grid-template-columns: 1fr; max-width: 460px; }
+            .side-info { display: none; }
+            .side-form { padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <!-- Colonne gauche : textes / présentation -->
+        <div class="side-info">
+            <div class="brand">
+                <img src="{% static 'img/logo.jpg' %}" alt="Logo">
+                <span>SÉNÉGAL BRODERIE<br>MODERNE</span>
+            </div>
+            <h2>Bienvenue !</h2>
+            <p class="lead">Votre plateforme de gestion de couture : clients, mesures,
+                facturation et suivi des livraisons, réunis au même endroit.</p>
+
+            <div class="feature">
+                <div class="ic"><i class="fas fa-users"></i></div>
+                <div><b>Clients &amp; mesures</b><small>Fiches et prises de mesures complètes</small></div>
+            </div>
+            <div class="feature">
+                <div class="ic"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div><b>Facturation &amp; caisse</b><small>Factures PDF, acomptes et encaissements</small></div>
+            </div>
+            <div class="feature">
+                <div class="ic"><i class="fas fa-calendar-check"></i></div>
+                <div><b>Suivi des livraisons</b><small>Calendrier des rendez-vous et rappels</small></div>
+            </div>
+        </div>
+
+        <!-- Colonne droite : identifiants -->
+        <div class="side-form">
+            <h1>Connexion</h1>
+            <p class="sub">Content de vous revoir. Veuillez vous identifier.</p>
+
+            {% if erreur %}<div class="alert-err"><i class="fas fa-exclamation-circle"></i> {{ erreur }}</div>{% endif %}
+
+            <form method="POST" action="{% url 'access' %}">
+                {% csrf_token %}
+                <div class="field">
+                    <label for="login">Nom d'utilisateur</label>
+                    <div class="input-wrap">
+                        <span class="lic"><i class="fas fa-user"></i></span>
+                        <input type="text" id="login" name="login" placeholder="Votre identifiant" required autofocus>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="password">Mot de passe</label>
+                    <div class="input-wrap">
+                        <span class="lic"><i class="fas fa-lock"></i></span>
+                        <input type="password" id="password" name="password" placeholder="••••••••" required>
+                        <button type="button" class="toggle-pw" onclick="togglePw()" aria-label="Afficher le mot de passe">
+                            <i class="fas fa-eye-slash" id="pwIcon"></i></button>
+                    </div>
+                </div>
+                <button type="submit" name="bt_login" class="btn-login">Se connecter</button>
+                <div class="foot">Sénégal Broderie Moderne (S.B.M) — Dakar</div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function togglePw() {
+            var i = document.getElementById('password'), ic = document.getElementById('pwIcon');
+            if (i.type === 'password') { i.type = 'text'; ic.className = 'fas fa-eye'; }
+            else { i.type = 'password'; ic.className = 'fas fa-eye-slash'; }
+        }
+    </script>
+</body>
+</html>

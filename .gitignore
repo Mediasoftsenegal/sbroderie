@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+staticfiles/
+tmp_sessions/
+.env
+db.sqlite3
+venv/
+*.sql
+*.sqlite3
+sbroderie/settings - Copie.py

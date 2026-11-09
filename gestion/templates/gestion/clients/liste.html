@@ -1,0 +1,119 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Clients{% endblock %}
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">Clients</h1>
+        <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Clients</span></nav>
+    </div>
+    <button class="btn btn-info btn-sm shadow-sm" data-toggle="modal" data-target="#modalClient">
+        <i class="fas fa-plus fa-sm"></i> Nouveau client</button>
+</div>
+
+<!-- Indicateurs -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-primary"><i class="fas fa-users"></i></div>
+        <div class="stat-label">Total clients</div><div class="stat-value">{{ nb_total }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-teal"><i class="fas fa-male"></i></div>
+        <div class="stat-label">Hommes</div><div class="stat-value">{{ nb_hommes }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon" style="background:#fdeaf1;color:#d4537e;"><i class="fas fa-female"></i></div>
+        <div class="stat-label">Femmes</div><div class="stat-value">{{ nb_femmes }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-warning"><i class="fas fa-pencil-ruler"></i></div>
+        <div class="stat-label">Avec mesures</div><div class="stat-value">{{ avec_mesure }}</div>
+    </div></div></div>
+</div>
+
+<!-- Liste -->
+<div class="card shadow mb-4">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Liste des clients</h6>
+        <ul class="nav nav-pills filter-tabs" id="filterGenre">
+            <li class="nav-item"><a href="#" class="nav-link active" data-genre="">Tous</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-genre="Homme">Hommes</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-genre="Femme">Femmes</a></li>
+        </ul>
+    </div>
+    <div class="card-body">
+    <div class="table-responsive">
+    <table class="table" id="dataTable" width="100%">
+        <thead><tr>
+            <th>Client</th><th>Téléphone</th><th>Adresse</th><th>Genre</th><th class="text-center">Actions</th>
+        </tr></thead>
+        <tbody>
+        {% for c in clients %}
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    <span class="avatar {% cycle 'av1' 'av2' 'av3' 'av4' 'av5' %}">{{ c.prenom_nom|initiales }}</span>
+                    <div class="ml-2">
+                        <div class="cust-name">{{ c.prenom_nom }}</div>
+                        <div class="cust-sub">{{ c.codecli|default:"—" }}</div>
+                    </div>
+                </div>
+            </td>
+            <td>{{ c.telephone|default:"—" }}</td>
+            <td>{{ c.adresse|default:"—" }}</td>
+            <td>
+                {% if c.genre|lower == "femme" %}
+                    <span class="badge badge-pink">Femme</span>
+                {% else %}
+                    <span class="badge badge-blue">Homme</span>
+                {% endif %}
+            </td>
+            <td class="text-center actions-cell">
+                <a href="{% url 'ajout_mesure' c.id_client %}" title="Mesures"><i class="fas fa-pencil-ruler"></i></a>
+                <a href="{% url 'panier_produit' c.id_client %}" title="Facturer"><i class="fas fa-shopping-cart"></i></a>
+                <a href="{% url 'client_modif' c.id_client %}" title="Modifier"><i class="fas fa-edit"></i></a>
+                <a href="{% url 'client_supp' c.id_client %}" title="Supprimer" class="text-danger"
+                   onclick="return confirm('Supprimer ce client ?')"><i class="fas fa-trash"></i></a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalClient" role="dialog"><div class="modal-dialog"><div class="modal-content">
+<form method="POST" action="{% url 'client_insert' %}">{% csrf_token %}
+<div class="modal-header"><h5 class="modal-title">Nouveau client</h5>
+<button type="button" class="close" data-dismiss="modal">&times;</button></div>
+<div class="modal-body">
+    <div class="form-group"><label>Code client</label><input name="codecli" class="form-control"></div>
+    <div class="form-group"><label>Prénom &amp; Nom</label><input name="prenom_nom" class="form-control" required></div>
+    <div class="form-group"><label>Genre</label>
+        <select name="genre" class="form-control"><option value="Homme">Homme</option><option value="Femme">Femme</option></select></div>
+    <div class="form-group"><label>Téléphone</label><input name="telephone" class="form-control"></div>
+    <div class="form-group"><label>Adresse</label><input name="adresse" class="form-control"></div>
+    <input type="hidden" name="id_societe" value="{{ session_id_societe }}">
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+    <button type="submit" class="btn btn-success" name="bt_client">Enregistrer</button>
+</div>
+</form></div></div></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function () {
+    var table = $('#dataTable').DataTable();
+    $('#filterGenre a').on('click', function (e) {
+        e.preventDefault();
+        $('#filterGenre a').removeClass('active');
+        $(this).addClass('active');
+        var g = $(this).data('genre');
+        table.column(3).search(g ? ('^' + g + '$') : '', true, false).draw();
+    });
+});
+</script>
+{% endblock %}

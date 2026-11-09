@@ -1,0 +1,46 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Comptabilité{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-4 text-gray-800">Comptabilité / Finance</h1>
+<div class="card shadow mb-4"><div class="card-body">
+<form method="POST" class="form-inline mb-3">{% csrf_token %}
+    <label class="mr-2">Du</label><input type="date" name="dated" value="{{ dated }}" class="form-control mr-2" required>
+    <label class="mr-2">Au</label><input type="date" name="datef" value="{{ datef }}" class="form-control mr-2" required>
+    <button class="btn btn-primary">Afficher</button>
+</form>
+<div class="row mb-3">
+    <div class="col-md-3"><div class="card bg-primary text-white shadow"><div class="card-body">
+        Total facturé<div class="h4">{{ tot.facture|fcfa }} F CFA</div></div></div></div>
+    <div class="col-md-3"><div class="card bg-success text-white shadow"><div class="card-body">
+        Total encaissé<div class="h4">{{ tot.enc|fcfa }} F CFA</div></div></div></div>
+    <div class="col-md-3"><div class="card bg-info text-white shadow"><div class="card-body">
+        Total remise<div class="h4">{{ tot.remise|fcfa }} F CFA</div></div></div></div>
+    <div class="col-md-3"><div class="card bg-warning text-white shadow"><div class="card-body">
+        Reste à encaisser<div class="h4">{{ tot.reste|fcfa }} F CFA</div></div></div></div>
+</div>
+<div class="table-responsive">
+<table class="table table-bordered" id="dataTable" width="100%">
+    <thead><tr><th>N° Facture</th><th>Date</th><th>Montant</th><th>Encaissé</th><th>Remise</th><th>Reliquat</th></tr></thead>
+    <tbody>
+    {% for l in lignes %}
+    <tr>
+        <td class="font-weight-bold" {% if not l.equilibre %}style="background-color:#ff9800;color:#fff;" title="Déséquilibre : montant ≠ encaissé + remise"{% endif %}>{{ l.numero_facture }}</td>
+        <td>{{ l.date_facture }}</td>
+        <td class="mono-amount">{{ l.montant_facture|fcfa }}</td>
+        <td class="mono-amount">{{ l.cumul_paye|fcfa }}</td>
+        <td class="mono-amount">{{ l.remise|fcfa }}</td>
+        <td class="mono-amount">{{ l.reliquat|fcfa }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot><tr class="font-weight-bold">
+        <th colspan="2">TOTAL</th>
+        <th class="mono-amount">{{ tot.facture|fcfa }} F</th>
+        <th class="mono-amount">{{ tot.enc|fcfa }} F</th>
+        <th class="mono-amount">{{ tot.remise|fcfa }} F</th>
+        <th class="mono-amount">{{ tot.reste|fcfa }} F</th>
+    </tr></tfoot>
+</table>
+</div></div></div>
+{% endblock %}

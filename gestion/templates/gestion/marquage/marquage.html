@@ -1,0 +1,60 @@
+{% extends "gestion/base.html" %}
+{% block titre %}Marquage{% endblock %}
+{% block contenu %}
+<div class="mb-4">
+    <h1 class="h3 mb-1 text-gray-800">Marquage</h1>
+    <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Marquage</span></nav>
+</div>
+
+<div class="card shadow mb-4"><div class="card-body">
+    <form method="POST" class="form-inline">{% csrf_token %}
+        <label class="mr-2 font-weight-600">Numéro de facture</label>
+        <select name="numero_facture" class="form-control mr-2">
+            {% for n in numeros %}<option value="{{ n.numero_facture }}" {% if n.numero_facture == selection %}selected{% endif %}>{{ n.numero_facture }}</option>{% endfor %}
+        </select>
+        <button class="btn btn-info"><i class="fas fa-search fa-sm"></i> Afficher</button>
+    </form>
+</div></div>
+
+{% if selection %}
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-primary"><i class="fas fa-tshirt"></i></div>
+        <div class="stat-label">Articles</div><div class="stat-value">{{ kpi.total }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon ia-blue"><i class="fas fa-cut"></i></div>
+        <div class="stat-label">Couture faite</div><div class="stat-value">{{ kpi.couture }}<small>/{{ kpi.total }}</small></div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon ia-purple"><i class="fas fa-feather-alt"></i></div>
+        <div class="stat-label">Broderie faite</div><div class="stat-value">{{ kpi.broderie }}<small>/{{ kpi.total }}</small></div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon ia-amber"><i class="fas fa-circle"></i></div>
+        <div class="stat-label">Boutons faits</div><div class="stat-value">{{ kpi.bouton }}<small>/{{ kpi.total }}</small></div>
+    </div></div></div>
+</div>
+{% endif %}
+
+<div class="card shadow mb-4">
+    <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Suivi de production {% if selection %}— {{ selection }}{% endif %}</h6></div>
+    <div class="card-body"><div class="table-responsive">
+    <table class="table" id="dataTable" width="100%">
+        <thead><tr><th>Article</th><th>Modèle</th><th>Couture</th><th>Broderie</th><th>Bouton</th></tr></thead>
+        <tbody>
+        {% for l in lignes %}
+        <tr>
+            <td><div class="d-flex align-items-center"><span class="icon-avatar {% cycle 'ia-primary' 'ia-blue' 'ia-green' 'ia-teal' 'ia-purple' %}"><i class="fas fa-tshirt"></i></span>
+                <div class="ml-2"><div class="cust-name text-uppercase">{{ l.des }}</div><div class="cust-sub">{{ l.catp }}</div></div></div></td>
+            <td>{{ l.libmod }}</td>
+            <td>{% if l.date_couture %}<span class="badge badge-success"><i class="fas fa-check"></i> {{ l.date_couture }}</span>{% else %}<a href="{% url 'marquage_detail' l.id_marquage 'couture' %}" class="btn btn-sm btn-outline-danger">Affecter</a>{% endif %}</td>
+            <td>{% if l.date_broderie %}<span class="badge badge-success"><i class="fas fa-check"></i> {{ l.date_broderie }}</span>{% else %}<a href="{% url 'marquage_detail' l.id_marquage 'broderie' %}" class="btn btn-sm btn-outline-danger">Affecter</a>{% endif %}</td>
+            <td>{% if l.date_bouton %}<span class="badge badge-success"><i class="fas fa-check"></i> {{ l.date_bouton }}</span>{% else %}<a href="{% url 'marquage_detail' l.id_marquage 'bouton' %}" class="btn btn-sm btn-outline-danger">Affecter</a>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div></div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Caisse{% endblock %}
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Caisse du jour</h1>
+    <h4>Caisse du jour : {{ tot.enc|fcfa }} F CFA</h4>
+</div>
+<div class="card shadow mb-4"><div class="card-body"><div class="table-responsive">
+<table class="table table-bordered" id="dataTable" width="100%">
+    <thead><tr><th>N° Facture</th><th>Montant</th><th>Encaissement</th></tr></thead>
+    <tbody>
+    {% for l in lignes %}
+    <tr><td>{{ l.numero_facture }}</td><td>{{ l.montant_facture|fcfa }} F CFA</td><td>{{ l.montpaye|fcfa }} F CFA</td></tr>
+    {% endfor %}
+    </tbody>
+    <tfoot><tr><th>Total</th><th>{{ tot.facture|fcfa }} F CFA</th><th>{{ tot.enc|fcfa }} F CFA</th></tr></tfoot>
+</table>
+</div></div></div>
+{% endblock %}

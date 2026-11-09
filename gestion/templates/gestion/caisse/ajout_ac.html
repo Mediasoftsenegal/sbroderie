@@ -1,0 +1,34 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Ajout acompte{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-4 text-gray-800">Ajout Acompte</h1>
+<div class="card shadow mb-4"><div class="card-body">
+{% if fact %}
+<form action="{% url 'caisse_fonction' %}" method="POST">{% csrf_token %}
+    <div class="row">
+        <div class="col-6"><div class="form-group"><label>Client</label>
+            <input class="form-control" value="{{ fact.prenom_nom }}" readonly></div></div>
+        <div class="col-6"><div class="form-group"><label>Téléphone</label>
+            <input class="form-control" value="{{ fact.telephone }}" readonly></div></div>
+    </div>
+    <div class="row">
+        <div class="col-6"><div class="form-group"><label>Montant facture</label>
+            <input class="form-control" value="{{ fact.montant_facture|fcfa }}" readonly></div></div>
+        <div class="col-6"><div class="form-group"><label>Σ Encaissements</label>
+            <input class="form-control" value="{{ cumul_paye|fcfa }}" readonly></div></div>
+    </div>
+    <div class="row">
+        <div class="col-6"><div class="form-group"><label>Nouveau montant à encaisser</label>
+            <input type="number" name="montpaye" class="form-control" required></div></div>
+        <div class="col-6"><div class="form-group"><label>Date de l'acompte</label>
+            <input type="date" name="date_facture" class="form-control" value="{{ today }}" required></div></div>
+    </div>
+    <input type="hidden" name="id_client" value="{{ fact.id_client }}">
+    <input type="hidden" name="numero_facture" value="{{ fact.numero_facture }}">
+    <input type="hidden" name="date_echeance" value="{{ fact.date_echeance }}">
+    <button type="submit" class="btn btn-success" name="ajouter">Enregistrer l'acompte</button>
+</form>
+{% endif %}
+</div></div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Honoraire{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-4 text-gray-800">Honoraire tailleur</h1>
+<div class="card shadow mb-4"><div class="card-body">
+<form method="POST" class="form-inline mb-3">{% csrf_token %}
+    <label class="mr-2">Tailleur</label>
+    <select name="prenom_nom" class="form-control mr-2" required>
+        <option value="">--</option>
+        {% for t in tailleurs %}<option value="{{ t.id_tailleur }}" {% if tailleur.id_tailleur == t.id_tailleur %}selected{% endif %}>{{ t.prenom_nom }} ({{ t.type_tailleur }})</option>{% endfor %}
+    </select>
+    <label class="mr-2">Du</label><input type="date" name="datedeb" value="{{ datedeb }}" class="form-control mr-2" required>
+    <label class="mr-2">Au</label><input type="date" name="datefin" value="{{ datefin }}" class="form-control mr-2" required>
+    <button class="btn btn-primary">Calculer</button>
+</form>
+{% if tailleur %}
+<h4>Tarif marquage : {{ tailleur.prenom_nom }} — Total : {{ total|fcfa }} F CFA</h4>
+<table class="table table-bordered" width="100%">
+    <thead><tr><th>Date</th><th>Modèle</th><th>Tarif</th></tr></thead>
+    <tbody>{% for r in resultats %}<tr><td>{{ r.d }}</td><td>{{ r.libmod }}</td><td>{{ r.tarif|fcfa }}</td></tr>{% endfor %}</tbody>
+</table>
+{% endif %}
+</div></div>
+{% endblock %}

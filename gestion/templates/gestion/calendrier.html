@@ -1,0 +1,127 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Calendrier des rendez-vous{% endblock %}
+
+{% block styles %}
+<style>
+    .cal-table { table-layout: fixed; width: 100%; border-collapse: separate; border-spacing: 0; }
+    .cal-table th { background: #f8f9fc; color: #5a5c69; font-weight: 700; text-align: center;
+        padding: .6rem; border-bottom: 1px solid #e3e6f0; font-size: .8rem; }
+    .cal-cell { height: 118px; vertical-align: top; border: 1px solid #eef0f6; padding: 6px;
+        position: relative; }
+    .cal-cell.vide { background: #fbfbfd; }
+    .cal-cell.today { background: #fdf3f5; }
+    .cal-num { font-size: .85rem; color: #6e707e; font-weight: 600; }
+    .cal-cell.today .cal-num { background: #e74a3b; color: #fff; border-radius: 50%;
+        width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center; }
+    .cal-event { display: block; font-size: .72rem; margin-top: 4px; padding: 3px 6px;
+        border-radius: 5px; color: #2d3a52; background: #e8eefc; border-left: 3px solid #4e73df;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
+    .cal-event:hover { filter: brightness(.97); text-decoration: none; }
+    .cal-event.solde { background: #e6f7f0; border-left-color: #1cc88a; color: #14663f; }
+    .cal-event.attente { background: #fef6e6; border-left-color: #f6c23e; color: #7a5b0a; }
+    .cal-more { font-size: .68rem; color: #858796; margin-top: 3px; }
+    .cal-nav-btn { border: none; background: #fce8ea; color: #e74a3b; border-radius: 50%;
+        width: 40px; height: 40px; font-size: 1rem; }
+    .cal-nav-btn:hover { background: #f8d5d9; }
+    .rv-item { border-left: 3px solid #4e73df; }
+    .rv-item.urgent { border-left-color: #e74a3b; }
+    .rv-item.proche { border-left-color: #f6c23e; }
+</style>
+{% endblock %}
+
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Calendrier des rendez-vous</h1>
+    <a href="{% url 'calendrier_ics' %}" class="btn btn-sm btn-success shadow-sm">
+        <i class="fas fa-download fa-sm"></i> Exporter (.ics — Google Agenda / Outlook)</a>
+</div>
+<p class="text-muted small mb-4">Chaque livraison est prévue <b>21 jours</b> après la date de facture.</p>
+
+<div class="row">
+    <!-- Calendrier -->
+    <div class="col-xl-9 col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                <h5 class="m-0 font-weight-bold text-danger">{{ titre_mois }}</h5>
+                <div>
+                    <a href="?mois={{ courant }}" class="btn btn-sm btn-outline-danger mr-2">Aujourd'hui</a>
+                    <a href="?mois={{ prec }}" class="cal-nav-btn"><i class="fas fa-chevron-left"></i></a>
+                    <a href="?mois={{ suiv }}" class="cal-nav-btn"><i class="fas fa-chevron-right"></i></a>
+                </div>
+            </div>
+            <div class="card-body p-2">
+                <table class="cal-table">
+                    <thead><tr>{% for j in jours_fr %}<th>{{ j }}</th>{% endfor %}</tr></thead>
+                    <tbody>
+                    {% for semaine in semaines %}
+                    <tr>
+                        {% for cell in semaine %}
+                        <td class="cal-cell {% if cell.jour == 0 %}vide{% endif %} {% if cell.aujourdhui %}today{% endif %}">
+                            {% if cell.jour != 0 %}
+                                <span class="cal-num">{{ cell.jour }}</span>
+                                {% for ev in cell.events|slice:":3" %}
+                                <a class="cal-event {% if ev.solde %}solde{% else %}attente{% endif %}"
+                                   href="{% url 'facture_details' ev.id_facture %}"
+                                   title="{{ ev.numero_facture }} — {{ ev.client }}{% if not ev.solde %} (reste {{ ev.reste|fcfa }} F){% endif %}">
+                                   <i class="fas fa-truck fa-xs"></i> {{ ev.client }}</a>
+                                {% endfor %}
+                                {% if cell.events|length > 3 %}
+                                <div class="cal-more">+ {{ cell.events|length|add:"-3" }} autre(s)</div>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <div class="mt-3 small text-muted">
+                    <span class="mr-3"><i class="fas fa-circle text-warning"></i> Livraison en attente</span>
+                    <span><i class="fas fa-circle text-success"></i> Facture soldée</span>
+                    &nbsp;·&nbsp; {{ total_livraisons }} livraison(s) ce mois-ci
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prochaines livraisons -->
+    <div class="col-xl-3 col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Prochaines livraisons</h6>
+                <span class="badge badge-primary badge-pill">{{ nb_a_venir }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% if a_venir %}
+                <div class="list-group list-group-flush">
+                    {% for lv in a_venir %}
+                    <a href="{% url 'facture_details' lv.id_facture %}"
+                       class="list-group-item list-group-item-action rv-item {% if lv.jours_restants <= 3 %}urgent{% elif lv.jours_restants <= 7 %}proche{% endif %}">
+                        <div class="d-flex justify-content-between">
+                            <span class="font-weight-bold">{{ lv.client }}</span>
+                            <small class="text-muted">{{ lv.numero_facture }}</small>
+                        </div>
+                        <div class="small text-gray-700">
+                            <i class="far fa-calendar"></i> {{ lv.livraison|date:"l d F Y" }}</div>
+                        <div class="small">
+                            {% if lv.jours_restants == 0 %}
+                                <span class="text-danger font-weight-bold">Aujourd'hui !</span>
+                            {% elif lv.jours_restants == 1 %}
+                                <span class="text-danger">Demain</span>
+                            {% else %}
+                                <span class="text-muted">Dans {{ lv.jours_restants }} jours</span>
+                            {% endif %}
+                            · reste {{ lv.reste|fcfa }} F
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted p-3 mb-0">Aucune livraison prévue dans les 30 prochains jours.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

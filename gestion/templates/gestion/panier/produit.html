@@ -1,0 +1,30 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Panier - Produits{% endblock %}
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-2">
+    <h1 class="h3 mb-0 text-gray-800">Panier &rarr; Choisir produit(s)</h1>
+    <a href="{% url 'panier_voir' cli.id_client %}"><i class="fas fa-cart-plus"></i> Consulter le panier ({{ count }} article(s))</a>
+</div>
+<div class="card shadow mb-4"><div class="card-header py-3">Étape 2
+<div class="progress"><div class="progress-bar bg-success" style="width:50%"></div></div></div>
+<div class="card-body">
+<div class="card bg-info text-white p-2 mb-3">
+    Client : {{ cli.prenom_nom }} &nbsp; | &nbsp; Tél/Adresse : {{ cli.telephone }} - {{ cli.adresse }}<br>
+    Numéro facture : {{ num_fact }}
+</div>
+<div class="table-responsive">
+<table class="table table-bordered" id="dataTable" width="100%">
+    <thead><tr><th>Désignation</th><th>Prix unitaire</th><th>Ajouter</th></tr></thead>
+    <tbody>
+    {% for a in produits %}
+    <tr>
+        <td style="text-transform:uppercase">{{ a.p.des }}-&gt;{{ a.libmod }}-&gt;{{ a.p.catp }}</td>
+        <td>{{ a.p.pu|fcfa }} F CFA</td>
+        <td><a href="{% url 'panier_add' cli.id_client a.p.codep %}"><i class="fas fa-shopping-basket"></i></a></td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div></div></div>
+{% endblock %}

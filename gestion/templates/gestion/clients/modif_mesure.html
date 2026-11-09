@@ -1,0 +1,17 @@
+{% extends "gestion/base.html" %}
+{% block titre %}Modifier mesure{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-4 text-gray-800">Modifier la mesure</h1>
+<div class="card shadow mb-4"><div class="card-body">
+<form method="POST">{% csrf_token %}
+<div class="row">
+{% for f in champs %}
+    <div class="col-md-3"><div class="form-group"><label>{{ f.1 }}</label>
+        <input type="text" name="{{ f.0 }}" class="form-control" value="{{ f.2 }}"></div></div>
+{% endfor %}
+</div>
+<button type="submit" class="btn btn-primary" name="bt_modif_mesure">Modifier</button>
+<a href="{% url 'mesures' %}" class="btn btn-secondary">Annuler</a>
+</form>
+</div></div>
+{% endblock %}

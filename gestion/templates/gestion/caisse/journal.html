@@ -1,0 +1,91 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Livre de caisse{% endblock %}
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Livre de caisse</h1>
+    <form method="GET" action="{% url 'caisse_journal' %}" class="form-inline">
+        <label class="mr-2">Date</label>
+        <input type="date" name="jour" class="form-control" value="{{ jour }}">
+        <button type="submit" class="btn btn-primary ml-2"><i class="fas fa-calendar-day"></i> Afficher</button>
+    </form>
+</div>
+
+<div class="row">
+    <!-- ENTREES -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header bg-success text-white"><h6 class="m-0 font-weight-bold"><i class="fas fa-arrow-down"></i> Entrées — Factures encaissées</h6></div>
+            <div class="card-body"><div class="table-responsive">
+            <table class="table table-bordered" width="100%">
+                <thead><tr><th>N° Facture</th><th>Client</th><th class="text-right">Montant encaissé</th></tr></thead>
+                <tbody>
+                {% for e in entrees %}
+                <tr>
+                    <td>{{ e.numero_facture }}</td>
+                    <td>{{ e.prenom_nom }}</td>
+                    <td class="text-right mono-amount">{{ e.montpaye|fcfa }} F</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center text-muted">Aucune entrée pour cette date.</td></tr>
+                {% endfor %}
+                </tbody>
+                <tfoot><tr class="table-success"><th colspan="2">Total entrées</th><th class="text-right mono-amount">{{ total_entrees|fcfa }} F</th></tr></tfoot>
+            </table>
+            </div></div>
+        </div>
+    </div>
+
+    <!-- SORTIES -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header bg-danger text-white"><h6 class="m-0 font-weight-bold"><i class="fas fa-arrow-up"></i> Sorties — Dépenses</h6></div>
+            <div class="card-body">
+                <form method="POST" action="{% url 'depense_insert' %}" class="form-row align-items-end mb-3">
+                    {% csrf_token %}
+                    <input type="hidden" name="jour" value="{{ jour }}">
+                    <div class="col-md-4 mb-2"><label class="small mb-1">Nom</label>
+                        <input type="text" name="nom" class="form-control form-control-sm" placeholder="Bénéficiaire" required></div>
+                    <div class="col-md-4 mb-2"><label class="small mb-1">Objet</label>
+                        <input type="text" name="objet" class="form-control form-control-sm" placeholder="Motif de la dépense" required></div>
+                    <div class="col-md-2 mb-2"><label class="small mb-1">Montant</label>
+                        <input type="number" step="1" min="1" name="montant" class="form-control form-control-sm" required></div>
+                    <div class="col-md-2 mb-2">
+                        <button type="submit" name="bt_depense" class="btn btn-sm btn-danger btn-block"><i class="fas fa-plus"></i></button></div>
+                </form>
+                <div class="table-responsive">
+                <table class="table table-bordered" width="100%">
+                    <thead><tr><th>Nom</th><th>Objet</th><th class="text-right">Montant</th><th></th></tr></thead>
+                    <tbody>
+                    {% for s in sorties %}
+                    <tr>
+                        <td>{{ s.nom }}</td>
+                        <td>{{ s.objet }}</td>
+                        <td class="text-right mono-amount">{{ s.montant|fcfa }} F</td>
+                        <td class="text-center"><a href="{% url 'depense_supp' s.id_depense %}" onclick="return confirm('Supprimer cette dépense ?');" title="Supprimer"><i class="fas fa-trash text-danger"></i></a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted">Aucune sortie pour cette date.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot><tr class="table-danger"><th colspan="2">Total sorties</th><th class="text-right mono-amount">{{ total_sorties|fcfa }} F</th><th></th></tr></tfoot>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RECAPITULATIF -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <table class="table table-bordered mb-0">
+            <tbody>
+                <tr><th style="width:70%">Total des entrées</th><td class="text-right mono-amount text-success">{{ total_entrees|fcfa }} F</td></tr>
+                <tr><th>Total des sorties</th><td class="text-right mono-amount text-danger">{{ total_sorties|fcfa }} F</td></tr>
+                <tr class="table-active"><th><strong>TOTAL CAISSE (écart entrées − sorties)</strong></th><td class="text-right mono-amount"><strong>{{ total_caisse|fcfa }} F</strong></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

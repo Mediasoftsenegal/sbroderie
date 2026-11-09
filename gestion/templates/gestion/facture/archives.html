@@ -1,0 +1,59 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Archives{% endblock %}
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">Factures archivées</h1>
+        <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Régularisation</span> <i class="fas fa-chevron-right"></i> <span>Archives</span></nav>
+    </div>
+    <a href="{% url 'regularisation' %}?tab=arch" class="btn btn-sm btn-secondary"><i class="fas fa-arrow-left"></i> Retour à l'archivage</a>
+</div>
+
+<form method="GET" class="form-inline mb-3">
+    <label class="mr-2 font-weight-bold">Année archivée</label>
+    <select name="annee" class="form-control" onchange="this.form.submit()">
+        <option value="">Toutes</option>
+        {% for an in annees %}<option value="{{ an }}" {% if annee == an|stringformat:'s' %}selected{% endif %}>{{ an }}</option>{% endfor %}
+    </select>
+</form>
+
+<div class="row">
+    <div class="col-md-4 mb-3"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-label">Factures archivées</div><div class="stat-value">{{ nb }}</div>
+    </div></div></div>
+    <div class="col-md-4 mb-3"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-label">Montant total</div><div class="stat-value">{{ total|fcfa }} <small>F</small></div>
+    </div></div></div>
+    <div class="col-md-4 mb-3"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-label">Encaissé</div><div class="stat-value">{{ encaisse|fcfa }} <small>F</small></div>
+    </div></div></div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Liste des factures archivées</h6></div>
+    <div class="card-body"><div class="table-responsive">
+    <table class="table table-bordered" id="dataTable" width="100%">
+        <thead><tr>
+            <th>N° Facture</th><th>Date</th>
+            <th class="text-right">Montant</th><th class="text-right">Encaissé</th>
+            <th class="text-right">Remise</th><th>Archivée le</th>
+        </tr></thead>
+        <tbody>
+        {% for f in factures %}
+        <tr>
+            <td class="font-weight-bold">{{ f.numero_facture }}</td>
+            <td>{{ f.date_facture }}</td>
+            <td class="text-right mono-amount">{{ f.montant_facture|fcfa }}</td>
+            <td class="text-right mono-amount">{{ f.montpaye|fcfa }}</td>
+            <td class="text-right mono-amount">{{ f.remise|fcfa }}</td>
+            <td>{{ f.date_archivage }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted">Aucune facture archivée pour ce filtre.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div></div>
+</div>
+{% endblock %}

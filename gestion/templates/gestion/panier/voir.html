@@ -1,0 +1,43 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Panier{% endblock %}
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-2">
+    <h1 class="h3 mb-0 text-gray-800">Panier &rarr; Consulter</h1>
+    <a class="btn btn-success btn-sm" href="{% url 'panier_produit' id_client %}">Poursuivre les achats &gt;</a>
+</div>
+<div class="card shadow mb-4"><div class="card-header py-3">Étape 3
+<div class="progress"><div class="progress-bar bg-success" style="width:75%"></div></div></div>
+<div class="card-body">
+<form action="{% url 'facture_info' %}" method="GET">
+<table class="table table-bordered" width="100%">
+    <thead><tr><th>Désignation</th><th>P.U</th><th>Quantité</th><th>Total</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for l in lignes %}
+    <tr>
+        <td><input type="text" class="form-control" name="des[]" value="{{ l.des }}" readonly></td>
+        <td><input type="number" class="form-control price" name="price[]" value="{{ l.pu }}" readonly></td>
+        <td><input type="number" class="form-control qty" name="qty[]" value="{{ l.qty }}"></td>
+        <td><input type="number" class="form-control subtot" name="subtot[]" value="{{ l.subtot }}" readonly></td>
+        <td><a href="{% url 'panier_del' id_client l.codep %}"><i class="fas fa-trash"></i></a></td>
+    </tr>
+    {% endfor %}
+    <tr><td colspan="2">Total</td>
+        <td><input type="number" id="totqty" name="totqty" class="form-control" value="{{ totqty }}" readonly></td>
+        <td><input type="number" id="total" name="total" class="form-control" value="{{ total }}" readonly></td><td></td></tr>
+    </tbody>
+</table>
+<input type="hidden" name="id_article" value="{{ id_article }}">
+<input type="hidden" name="id_client" value="{{ id_client }}">
+<button type="submit" class="btn btn-success" name="bt_facture">Valider</button>
+</form>
+</div></div>
+<script>
+var qtys=document.getElementsByClassName("qty"),subtots=document.getElementsByClassName("subtot"),
+prices=document.getElementsByClassName("price"),totqty=document.getElementById("totqty"),total=document.getElementById("total");
+for(let i=0;i<qtys.length;i++){qtys[i].addEventListener("change",e=>{
+ subtots[i].value=prices[i].value*e.target.value;let tq=0,t=0;
+ for(let j=0;j<qtys.length;j++){t+=parseInt(subtots[j].value||0);tq+=parseInt(qtys[j].value||0);}
+ totqty.value=tq;total.value=t;});}
+</script>
+{% endblock %}

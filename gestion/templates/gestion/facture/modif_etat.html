@@ -1,0 +1,33 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Modifier état{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-4 text-gray-800">Encaissement — Facture {{ fact.numero_facture }}</h1>
+<div class="card shadow mb-4"><div class="card-body">
+{% if fact %}
+<form action="{% url 'caisse_fonction' %}" method="POST">{% csrf_token %}
+    <input type="hidden" name="id_facture" value="{{ fact.id_facture }}">
+    <div class="row">
+        <div class="col-6"><div class="form-group"><label>Client</label>
+            <input class="form-control" value="{{ fact.prenom_nom }}" readonly></div></div>
+        <div class="col-6"><div class="form-group"><label>Montant facture</label>
+            <input class="form-control" value="{{ fact.montant_facture|fcfa }}" readonly></div></div>
+    </div>
+    <div class="row">
+        <div class="col-4"><div class="form-group"><label>Cumul encaissé</label>
+            <input class="form-control" value="{{ cumul_paye|fcfa }}" readonly></div></div>
+        <div class="col-4"><div class="form-group"><label>Nouveau montant encaissé</label>
+            <input type="number" class="form-control" id="montpaye" name="montpaye" value="{{ fact.montpaye }}" oninput="calc()"></div></div>
+        <div class="col-4"><div class="form-group"><label>Reste</label>
+            <input type="number" class="form-control" id="reste" name="reste" value="0" readonly></div></div>
+    </div>
+    <input type="hidden" name="etat" value="0">
+    <input type="hidden" id="montfac" value="{{ fact.montant_facture }}">
+    <button type="submit" class="btn btn-primary" name="valider">Valider</button>
+</form>
+<script>function calc(){var m=parseFloat(document.getElementById('montfac').value||0);
+var p=parseFloat(document.getElementById('montpaye').value||0);
+document.getElementById('reste').value=m-p;}calc();</script>
+{% endif %}
+</div></div>
+{% endblock %}

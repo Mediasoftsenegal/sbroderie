@@ -1,0 +1,169 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Sénégal Broderie Moderne - {% block titre %}Gestion{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.jpg' %}">
+    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900" rel="stylesheet">
+    <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{% static 'css/theme.css' %}" rel="stylesheet">
+    {% block styles %}{% endblock %}
+</head>
+<body id="page-top">
+<div id="wrapper">
+    <ul class="navbar-nav sidebar sidebar-light accordion" id="accordionSidebar">
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'clients' %}">
+            <div class="sidebar-brand-icon"><i class="fas fa-cut"></i></div>
+            <div class="sidebar-brand-text mx-2">S.B.M</div>
+        </a>
+        <hr class="sidebar-divider my-0">
+
+        {% if session_profil == 1 or session_profil == 2 or session_profil == 4 or session_profil == 7 %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}"><i class="fas fa-fw fa-tachometer-alt"></i><span>Tableau de bord</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'calendrier' %}"><i class="fas fa-fw fa-calendar-check"></i><span>Calendrier RV</span></a></li>
+        <hr class="sidebar-divider my-0">
+        {% endif %}
+
+        {% if session_profil == 1 or session_profil == 2 or session_profil == 7 %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'clients' %}"><i class="fas fa-fw fa-user-alt"></i><span>Clients</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'mesures' %}"><i class="fas fa-fw fa-pencil-ruler"></i><span>Mesures</span></a></li>
+        <hr class="sidebar-divider my-0">
+        <li class="nav-item"><a class="nav-link" href="{% url 'articles' %}"><i class="fas fa-fw fa-tags"></i><span>Articles</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'modeles' %}"><i class="fas fa-fw fa-tags"></i><span>Modèles</span></a></li>
+        <hr class="sidebar-divider my-0">
+        <li class="nav-item"><a class="nav-link" href="{% url 'panier_client' %}"><i class="fas fa-fw fa-shopping-cart"></i><span>Nouvelle facture</span></a></li>
+        {% if session_profil == 1 or session_profil == 2 %}
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseFact">
+                <i class="fas fa-fw fa-money-check"></i><span>Facturation</span></a>
+            <div id="collapseFact" class="collapse" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item" href="{% url 'facturation' %}">Factures</a>
+                    <a class="collapse-item" href="{% url 'caisse_acompte' %}">Acompte</a>
+                    <a class="collapse-item" href="{% url 'etat' %}">Etat de suivi</a>
+                    <a class="collapse-item" href="{% url 'indicateur' %}">Indicateur</a>
+                    <a class="collapse-item" href="{% url 'rvsemaine' %}">RV de la semaine</a>
+                    {% if session_superuser %}
+                    <a class="collapse-item text-danger font-weight-bold" href="{% url 'regularisation' %}"><i class="fas fa-user-shield"></i> Régularisation</a>
+                    {% endif %}
+                </div>
+            </div>
+        </li>
+        <hr class="sidebar-divider my-0">
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseMarq">
+                <i class="fas fa-fw fa-cogs"></i><span>Marquage</span></a>
+            <div id="collapseMarq" class="collapse" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item" href="{% url 'tailleur' %}">Tailleur</a>
+                    <a class="collapse-item" href="{% url 'tarif' %}">Tarif</a>
+                    <a class="collapse-item" href="{% url 'marquage' %}">Marquage</a>
+                    <a class="collapse-item" href="{% url 'honoraire' %}">Honoraire</a>
+                </div>
+            </div>
+        </li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'facturation' %}"><i class="fas fa-fw fa-money-check"></i><span>Facturation</span></a></li>
+        {% endif %}
+        <hr class="sidebar-divider my-0">
+        {% endif %}
+
+        {% if session_profil == 6 %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'facturation' %}"><i class="fas fa-fw fa-file-invoice"></i><span>Factures</span></a></li>
+        <hr class="sidebar-divider my-0">
+        {% endif %}
+
+        {% if session_profil == 1 %}
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseParam">
+                <i class="fas fa-fw fa-cogs"></i><span>Paramètres</span></a>
+            <div id="collapseParam" class="collapse" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item" href="{% url 'profil' %}">Profil</a>
+                    <a class="collapse-item" href="{% url 'utilisateur' %}">Utilisateur</a>
+                </div>
+            </div>
+        </li>
+        <hr class="sidebar-divider my-0">
+        {% endif %}
+
+        {% if session_profil == 3 or session_profil == 1 or session_profil == 7 %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'caisse' %}"><i class="fas fa-fw fa-cash-register"></i><span>Caisse</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'caisse_journal' %}"><i class="fas fa-fw fa-book"></i><span>Livre de caisse</span></a></li>
+        {% if session_profil == 7 %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'caisse_acompte' %}"><i class="fas fa-fw fa-hand-holding-usd"></i><span>Acompte</span></a></li>
+        {% endif %}
+        {% if session_profil == 3 %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'calendrier' %}"><i class="fas fa-fw fa-calendar-check"></i><span>Calendrier RV</span></a></li>
+        {% endif %}
+        {% endif %}
+        {% if session_profil == 4 or session_profil == 1 or session_profil == 2 %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'finance' %}"><i class="fas fa-fw fa-chart-line"></i><span>Comptabilité</span></a></li>
+        {% endif %}
+
+        {% if session_profil == 1 or session_profil == 2 or session_profil == 4 %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'mensuel' %}"><i class="fas fa-fw fa-calendar"></i><span>Etat Mensuel</span></a></li>
+        {% endif %}
+
+        {% if session_superuser %}
+        <hr class="sidebar-divider my-0">
+        <li class="nav-item"><a class="nav-link" href="{% url 'regularisation' %}"><i class="fas fa-fw fa-user-shield"></i><span>Régularisation</span></a></li>
+        {% endif %}
+        <hr class="sidebar-divider">
+        <div class="text-center d-none d-md-inline">
+            <button class="rounded-circle border-0" id="sidebarToggle"></button>
+        </div>
+    </ul>
+
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3"><i class="fa fa-bars"></i></button>
+                <img src="{% static 'img/logo.jpg' %}" alt="SBM" height="52" width="118" class="topbar-logo">
+                <ul class="navbar-nav ml-auto align-items-center">
+                    <li class="nav-item d-flex align-items-center mr-3">
+                        <div class="topbar-avatar">{{ session_nom|slice:":1"|upper }}</div>
+                        <div class="d-none d-lg-block ml-2 topbar-user">
+                            <div class="topbar-user-name">{{ session_nom }}</div>
+                            <div class="topbar-user-role">{{ session_societe }}</div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-sm btn-logout" href="{% url 'deconnexion' %}">
+                            <i class="fas fa-sign-out-alt fa-fw"></i> <span class="d-none d-sm-inline">Déconnexion</span></a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="container-fluid">
+                {% if messages %}
+                    {% for m in messages %}
+                    <div class="alert alert-info">{{ m }}</div>
+                    {% endfor %}
+                {% endif %}
+                {% block contenu %}{% endblock %}
+            </div>
+        </div>
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto"><div class="copyright text-center my-auto">
+                <span>Sénégal Broderie Moderne &copy; {% now "Y" %}</span></div></div>
+        </footer>
+    </div>
+</div>
+<a class="scroll-to-top rounded" href="#page-top"><i class="fas fa-angle-up"></i></a>
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+<script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+<script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+<script>$(document).ready(function(){ $('#dataTable').DataTable({language:{url:'//cdn.datatables.net/plug-ins/1.10.24/i18n/French.json'}}); });</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

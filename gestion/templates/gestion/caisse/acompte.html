@@ -1,0 +1,44 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Acompte{% endblock %}
+{% block contenu %}
+<div class="mb-4">
+    <h1 class="h3 mb-1 text-gray-800">Acomptes</h1>
+    <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Caisse</span> <i class="fas fa-chevron-right"></i> <span>Acomptes</span></nav>
+</div>
+
+<div class="row">
+    <div class="col-xl-4 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-warning"><i class="fas fa-hourglass-half"></i></div>
+        <div class="stat-label">Factures à solder</div><div class="stat-value">{{ kpi.nb }}</div>
+    </div></div></div>
+    <div class="col-xl-4 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-success"><i class="fas fa-hand-holding-usd"></i></div>
+        <div class="stat-label">Déjà encaissé</div><div class="stat-value">{{ kpi.encaisse|fcfa }} <small>F</small></div>
+    </div></div></div>
+    <div class="col-xl-4 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon" style="background:var(--sbm-primary-soft);color:var(--sbm-primary);"><i class="fas fa-wallet"></i></div>
+        <div class="stat-label">Reste à encaisser</div><div class="stat-value">{{ kpi.reste|fcfa }} <small>F</small></div>
+    </div></div></div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Factures en attente de règlement</h6></div>
+    <div class="card-body"><div class="table-responsive">
+    <table class="table" id="dataTable" width="100%">
+        <thead><tr><th>Client</th><th>Montant</th><th>Σ Encaissé</th><th>Reliquat</th><th class="text-center">Action</th></tr></thead>
+        <tbody>
+        {% for f in factures %}
+        <tr>
+            <td><div class="d-flex align-items-center"><span class="avatar {% cycle 'av1' 'av2' 'av3' 'av4' 'av5' %}">{{ f.prenom_nom|initiales }}</span><span class="ml-2 cust-name">{{ f.prenom_nom }}</span></div></td>
+            <td class="mono-amount">{{ f.montant_facture|fcfa }} F</td>
+            <td class="mono-amount">{{ f.cumul_paye|fcfa }} F</td>
+            <td class="mono-amount">{{ f.reliquat|fcfa }} F</td>
+            <td class="text-center"><a href="{% url 'caisse_ajout_ac' f.numero_facture %}" class="btn btn-info btn-sm"><i class="fas fa-plus fa-sm"></i> Acompte</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div></div>
+</div>
+{% endblock %}

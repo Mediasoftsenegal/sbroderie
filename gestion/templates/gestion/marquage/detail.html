@@ -1,0 +1,18 @@
+{% extends "gestion/base.html" %}
+{% block titre %}Affectation marquage{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-4 text-gray-800">Marquage — {{ phase|capfirst }}</h1>
+<div class="card shadow mb-4"><div class="card-body">
+<form action="{% url 'marquage_update' %}" method="POST">{% csrf_token %}
+    <input type="hidden" name="id_marquage" value="{{ id_marquage }}">
+    <div class="form-group"><label>Choisir Tailleur</label>
+        <select name="prenom_nom" class="form-control">
+            {% for t in tailleurs %}<option value="{{ t.id_tailleur }}">{{ t.prenom_nom }}</option>{% endfor %}
+        </select></div>
+    <div class="form-group"><label>Date {{ phase }}</label>
+        <input type="date" name="date_{{ phase }}" class="form-control" required></div>
+    <button type="submit" class="btn btn-success" name="bt_{{ phase }}">Enregistrer</button>
+    <a href="{% url 'marquage' %}" class="btn btn-secondary">Retour</a>
+</form>
+</div></div>
+{% endblock %}

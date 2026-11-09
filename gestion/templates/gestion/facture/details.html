@@ -1,0 +1,33 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Détails facture{% endblock %}
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Facture enregistrée</h1>
+    <div>
+        <a href="{% url 'facture_pdf' id_facture %}" target="_blank" class="btn btn-danger"><i class="fas fa-file-pdf"></i> Imprimer PDF</a>
+        <a href="{% url 'facture_pdf_sans_mesures' id_facture %}" class="btn btn-outline-danger"><i class="fas fa-download"></i> Télécharger PDF sans mesures</a>
+        {% if wa_possible %}
+        <a href="{% url 'facture_whatsapp' id_facture %}" target="_blank" rel="noopener" class="btn btn-success"><i class="fab fa-whatsapp"></i> Envoyer par WhatsApp</a>
+        {% elif detail %}
+        <span class="text-muted small ml-2">Pas de numéro de téléphone valide : envoi WhatsApp indisponible.</span>
+        {% endif %}
+    </div>
+</div>
+{% if detail %}
+<div class="card shadow mb-4"><div class="card-body">
+    <h4>Facture N° {{ detail.numero_facture }}</h4>
+    <p>Client : <b>{{ detail.prenom_nom }}</b> — Tél : {{ detail.telephone }}<br>
+       Date : {{ detail.date_facture }} — Échéance : {{ detail.date_echeance }}</p>
+    <table class="table table-bordered">
+        <tr><th>Articles</th><td>{{ detail.article }}</td></tr>
+        <tr><th>Prix unitaires</th><td>{{ detail.prix_unitaire }}</td></tr>
+        <tr><th>Quantités</th><td>{{ detail.nombre }}</td></tr>
+        <tr><th>Montant</th><td>{{ detail.montant_facture|fcfa }} F CFA</td></tr>
+        <tr><th>Remise</th><td>{{ detail.remise|fcfa }} F CFA</td></tr>
+        <tr><th>Encaissé</th><td>{{ detail.montpaye|fcfa }} F CFA</td></tr>
+    </table>
+</div></div>
+{% endif %}
+<a href="{% url 'facturation' %}" class="btn btn-secondary">Retour à la facturation</a>
+{% endblock %}

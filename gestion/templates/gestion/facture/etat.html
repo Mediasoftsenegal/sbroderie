@@ -1,0 +1,71 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Etat de suivi{% endblock %}
+{% block contenu %}
+<div class="mb-4">
+    <h1 class="h3 mb-1 text-gray-800">État de suivi</h1>
+    <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Facturation</span> <i class="fas fa-chevron-right"></i> <span>État de suivi</span></nav>
+</div>
+<form method="GET" class="form-inline mb-3">
+    <label class="mr-2 font-weight-bold">Année</label>
+    <select name="annee" class="form-control" onchange="this.form.submit()">
+        {% for an in annees %}<option value="{{ an }}" {% if an == annee %}selected{% endif %}>{{ an }}</option>{% endfor %}
+    </select>
+</form>
+
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-primary"><i class="fas fa-list-alt"></i></div>
+        <div class="stat-label">Factures</div><div class="stat-value">{{ kpi.nb }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-teal"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-label">Payées</div><div class="stat-value">{{ kpi.payees }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-warning"><i class="fas fa-hourglass-half"></i></div>
+        <div class="stat-label">En cours</div><div class="stat-value">{{ kpi.encours }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon" style="background:var(--sbm-primary-soft);color:var(--sbm-primary);"><i class="fas fa-wallet"></i></div>
+        <div class="stat-label">Reste à encaisser</div><div class="stat-value">{{ kpi.reste|fcfa }} <small>F</small></div>
+    </div></div></div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Suivi des règlements</h6>
+        <ul class="nav nav-pills filter-tabs" id="filterEtat">
+            <li class="nav-item"><a href="#" class="nav-link active" data-etat="">Toutes</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-etat="Payée">Payées</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-etat="En cours">En cours</a></li>
+        </ul>
+    </div>
+    <div class="card-body"><div class="table-responsive">
+    <table class="table" id="dataTable" width="100%">
+        <thead><tr><th>N° Facture</th><th>Client</th><th>Montant</th><th>Σ Encaissé</th><th>Reliquat</th><th>État</th><th class="text-center">Encaisser</th></tr></thead>
+        <tbody>
+        {% for f in factures %}
+        <tr>
+            <td class="font-weight-bold">{{ f.numero_facture }}</td>
+            <td><div class="d-flex align-items-center"><span class="avatar {% cycle 'av1' 'av2' 'av3' 'av4' 'av5' %}">{{ f.prenom_nom|initiales }}</span><span class="ml-2 cust-name">{{ f.prenom_nom }}</span></div></td>
+            <td class="mono-amount">{{ f.montant_facture|fcfa }}</td>
+            <td class="mono-amount">{{ f.cumul_paye|fcfa }}</td>
+            <td class="mono-amount">{{ f.reliquat|fcfa }}</td>
+            <td>{% if f.etat_facture == 1 %}<span class="badge badge-success">Payée</span>{% else %}<span class="badge badge-warning">En cours</span>{% endif %}</td>
+            <td class="text-center actions-cell"><a href="{% url 'modif_etat' f.numero_facture %}" title="Encaisser"><i class="fas fa-hand-holding-usd"></i></a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div></div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+$(function(){var t=$('#dataTable').DataTable();
+$('#filterEtat a').on('click',function(e){e.preventDefault();
+$('#filterEtat a').removeClass('active');$(this).addClass('active');
+var s=$(this).data('etat');t.column(5).search(s?('^'+s+'$'):'',true,false).draw();});});
+</script>
+{% endblock %}

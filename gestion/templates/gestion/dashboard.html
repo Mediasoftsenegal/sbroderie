@@ -1,0 +1,155 @@
+{% extends "gestion/base.html" %}
+{% load fcfa static %}
+{% block titre %}Tableau de bord{% endblock %}
+
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">Tableau de bord</h1>
+        <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Tableau de bord</span></nav>
+    </div>
+    <div class="d-flex align-items-center">
+        <form method="GET" class="form-inline mr-3">
+            <label class="mr-2 font-weight-bold">Année</label>
+            <select name="annee" class="form-control" onchange="this.form.submit()">
+                {% for an in annees %}<option value="{{ an }}" {% if an == annee %}selected{% endif %}>{{ an }}</option>{% endfor %}
+            </select>
+        </form>
+        <a href="{% url 'calendrier' %}" class="btn btn-sm btn-info shadow-sm">
+            <i class="fas fa-calendar-check fa-sm"></i> Calendrier des livraisons</a>
+    </div>
+</div>
+
+<!-- Indicateurs clés -->
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card h-100"><div class="card-body">
+            <div class="stat-icon stat-icon-primary"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div class="stat-label">Total facturé {{ annee_courante }}</div>
+            <div class="stat-value">{{ total_facture|fcfa }} <small>F</small></div>
+            <div class="stat-foot"><i class="fas fa-receipt"></i> {{ nb_factures_annee }} facture(s) en {{ annee_courante }}</div>
+        </div></div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card h-100"><div class="card-body">
+            <div class="stat-icon stat-icon-success"><i class="fas fa-hand-holding-usd"></i></div>
+            <div class="stat-label">Total encaissé</div>
+            <div class="stat-value">{{ total_encaisse|fcfa }} <small>F</small></div>
+            <div class="stat-foot"><span class="stat-chip stat-chip-success">{{ taux_recouvrement }}%</span> recouvré</div>
+        </div></div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card h-100"><div class="card-body">
+            <div class="stat-icon stat-icon-teal"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-label">Factures payées</div>
+            <div class="stat-value">{{ nb_payees }}</div>
+            <div class="stat-foot"><span class="stat-chip stat-chip-success">{{ pct_payees }}%</span> du total</div>
+        </div></div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card stat-card h-100"><div class="card-body">
+            <div class="stat-icon stat-icon-warning"><i class="fas fa-hourglass-half"></i></div>
+            <div class="stat-label">Factures impayées</div>
+            <div class="stat-value">{{ nb_impayees }}</div>
+            <div class="stat-foot text-danger"><i class="fas fa-exclamation-circle"></i> Reste {{ reliquat|fcfa }} F</div>
+        </div></div>
+    </div>
+</div>
+
+<!-- Graphiques principaux -->
+<div class="row">
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Montants facturés & encaissés (12 derniers mois)</h6>
+            </div>
+            <div class="card-body"><div class="chart-area"><canvas id="chartMois"></canvas></div></div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Répartition des factures</h6></div>
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2"><canvas id="chartEtat"></canvas></div>
+                <div class="mt-4 text-center small">
+                    <span class="mr-2"><i class="fas fa-circle text-success"></i> Payées</span>
+                    <span class="mr-2"><i class="fas fa-circle text-warning"></i> Impayées</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Commandes par client (mois courant) -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">
+                Nombre de commandes par client — {{ mois_courant }}</h6></div>
+            <div class="card-body">
+                {% if aucun_client %}
+                    <p class="text-muted mb-0">Aucune commande enregistrée ce mois-ci.</p>
+                {% else %}
+                    <div class="chart-bar"><canvas id="chartClients"></canvas></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
+<script>
+var fcfa = function(v){ return new Intl.NumberFormat('fr-FR').format(v) + ' F'; };
+
+// Montants par mois (barres + ligne)
+new Chart(document.getElementById('chartMois'), {
+    type: 'bar',
+    data: {
+        labels: {{ labels_mois|safe }},
+        datasets: [
+            { label: 'Facturé', data: {{ data_facture|safe }},
+              backgroundColor: 'rgba(78,115,223,0.5)', borderColor: '#4e73df', borderWidth: 1 },
+            { label: 'Encaissé', type: 'line', data: {{ data_encaisse|safe }},
+              borderColor: '#1cc88a', backgroundColor: 'rgba(28,200,138,0.1)', fill: true, tension: 0.3 }
+        ]
+    },
+    options: {
+        maintainAspectRatio: false,
+        scales: { yAxes: [{ ticks: { beginAtZero: true,
+            callback: function(v){ return fcfa(v); } } }] },
+        tooltips: { callbacks: { label: function(t, d){
+            return d.datasets[t.datasetIndex].label + ' : ' + fcfa(t.yLabel); } } }
+    }
+});
+
+// Répartition payées / impayées
+new Chart(document.getElementById('chartEtat'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Payées', 'Impayées'],
+        datasets: [{ data: {{ data_etat|safe }},
+            backgroundColor: ['#1cc88a', '#f6c23e'], hoverBackgroundColor: ['#17a673', '#dda20a'] }]
+    },
+    options: { maintainAspectRatio: false, legend: { display: false }, cutoutPercentage: 70 }
+});
+
+{% if not aucun_client %}
+// Commandes par client (mois courant)
+new Chart(document.getElementById('chartClients'), {
+    type: 'bar',
+    data: {
+        labels: {{ labels_clients|safe }},
+        datasets: [{ label: 'Commandes', data: {{ data_clients|safe }},
+            backgroundColor: '#36b9cc' }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        scales: { yAxes: [{ ticks: { beginAtZero: true, precision: 0, stepSize: 1 } }] },
+        legend: { display: false }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

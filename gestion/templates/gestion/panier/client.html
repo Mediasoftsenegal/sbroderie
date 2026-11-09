@@ -1,0 +1,20 @@
+{% extends "gestion/base.html" %}
+{% block titre %}Panier - Client{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-0 text-gray-800">Panier &rarr; Choisir le client</h1>
+<div class="card shadow mb-4"><div class="card-header py-3">Étape 1
+<div class="progress"><div class="progress-bar bg-success" style="width:25%"></div></div></div>
+<div class="card-body">
+<h3>Numéro facture : {{ num_fact }}</h3>
+<div class="table-responsive">
+<table class="table table-bordered" id="dataTable" width="100%">
+    <thead><tr><th>N°</th><th>Prénom & Nom</th><th>Genre</th><th>Téléphone</th><th>Actions</th></tr></thead>
+    <tbody>
+    {% for c in clients %}
+    <tr><td>{{ forloop.counter }}</td><td>{{ c.prenom_nom }}</td><td>{{ c.genre }}</td><td>{{ c.telephone }}</td>
+        <td align="center"><a href="{% url 'panier_produit' c.id_client %}"><i class="fas fa-shopping-cart"></i></a></td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div></div></div>
+{% endblock %}

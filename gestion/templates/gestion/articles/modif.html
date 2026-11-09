@@ -1,0 +1,25 @@
+{% extends "gestion/base.html" %}
+{% block titre %}Modifier article{% endblock %}
+{% block contenu %}
+<h1 class="h3 mb-4 text-gray-800">Modifier l'article</h1>
+<div class="card shadow mb-4"><div class="card-body">
+<form method="POST">{% csrf_token %}
+    <input type="hidden" name="codep" value="{{ prod.codep }}">
+    <div class="form-group"><label>Désignation</label><input name="des" class="form-control" value="{{ prod.des }}"></div>
+    <div class="form-group"><label>Prix unitaire</label><input type="number" name="pu" class="form-control" value="{{ prod.pu }}"></div>
+    <div class="form-group"><label>Catégorie</label>
+        <select name="catp" class="form-control">
+            <option {% if prod.catp == "PAP" %}selected{% endif %}>PAP</option>
+            <option {% if prod.catp == "TISSU" %}selected{% endif %}>TISSU</option>
+        </select></div>
+    <div class="form-group"><label>Modèle</label>
+        <select name="modele" class="form-control">
+            {% for m in modeles %}<option value="{{ m.codemod }}" {% if m.codemod == prod.id_modele %}selected{% endif %}>{{ m.libmod }}</option>{% endfor %}
+        </select></div>
+    <div class="form-group"><label>Genre</label><input name="genre" class="form-control" value="{{ prod.genre }}"></div>
+    <div class="form-group"><label>Couleur</label><input name="couleur" class="form-control" value="{{ prod.couleur }}"></div>
+    <button type="submit" class="btn btn-primary" name="bt_update_article">Modifier</button>
+    <a href="{% url 'articles' %}" class="btn btn-secondary">Annuler</a>
+</form>
+</div></div>
+{% endblock %}

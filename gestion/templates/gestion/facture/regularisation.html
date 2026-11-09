@@ -1,0 +1,384 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Régularisation des factures{% endblock %}
+{% block contenu %}
+<div class="mb-4">
+    <h1 class="h3 mb-1 text-gray-800">Régularisation des factures</h1>
+    <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Facturation</span> <i class="fas fa-chevron-right"></i> <span>Régularisation</span></nav>
+    <p class="text-muted mb-0"><i class="fas fa-user-shield"></i> Espace réservé au superuser.</p>
+</div>
+
+<ul class="nav nav-tabs mb-3" id="regTabs" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link {% if tab != 'verif' and tab != 'arch' %}active{% endif %}" id="tab-solde" data-toggle="tab" href="#pane-solde" role="tab">
+            <i class="fas fa-balance-scale"></i> Solder une facture</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if tab == 'verif' %}active{% endif %}" id="tab-verif" data-toggle="tab" href="#pane-verif" role="tab">
+            <i class="fas fa-check-double"></i> Vérification des montants
+            {% if nb_ecarts %}<span class="badge badge-danger ml-1">{{ nb_ecarts }}</span>{% endif %}</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if tab == 'arch' %}active{% endif %}" id="tab-arch" data-toggle="tab" href="#pane-arch" role="tab">
+            <i class="fas fa-box-archive"></i> <i class="fas fa-archive"></i> Archivage</a>
+    </li>
+</ul>
+
+<div class="tab-content">
+<!-- ====================== ONGLET 1 : SOLDER ====================== -->
+<div class="tab-pane fade {% if tab != 'verif' %}show active{% endif %}" id="pane-solde" role="tabpanel">
+
+    {% if request.GET.ok %}
+    <div class="alert alert-success"><i class="fas fa-check-circle"></i> Facture <strong>{{ numero_facture }}</strong> régularisée : elle est désormais soldée (état « Payée »).</div>
+    {% endif %}
+    {% if request.GET.supprime %}
+    <div class="alert alert-success"><i class="fas fa-check-circle"></i> Facture <strong>{{ request.GET.supprime }}</strong> et ses détails ont été supprimés.</div>
+    {% endif %}
+    {% if request.GET.etatok %}
+    <div class="alert alert-success"><i class="fas fa-check-circle"></i> L'état de la facture a été mis à jour.</div>
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Rechercher une facture</h6></div>
+        <div class="card-body">
+            <form method="GET" action="{% url 'regularisation' %}" class="form-inline">
+                <div class="form-group mr-2 mb-2">
+                    <label class="mr-2">N° Facture</label>
+                    <input type="text" name="numero_facture" class="form-control" value="{{ numero_facture }}" placeholder="Ex: SD049937">
+                </div>
+                <button type="submit" class="btn btn-primary mb-2"><i class="fas fa-search"></i> Rechercher</button>
+            </form>
+        </div>
+    </div>
+
+    {% if introuvable %}
+    <div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Aucune facture trouvée pour le numéro <strong>{{ numero_facture }}</strong>.</div>
+    {% endif %}
+
+    {% if fact %}
+    <div class="card shadow mb-4">
+        <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Facture {{ fact.numero_facture }}</h6></div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6"><div class="form-group"><label>Client</label>
+                    <input class="form-control" value="{{ fact.prenom_nom }}" readonly></div></div>
+                <div class="col-md-6"><div class="form-group"><label>Téléphone</label>
+                    <input class="form-control" value="{{ fact.telephone }}" readonly></div></div>
+            </div>
+
+            <div class="row align-items-end mb-3">
+                <div class="col-md-4"><label class="d-block">État actuel</label>
+                    {% if fact.etat_facture == 1 %}<span class="badge badge-success p-2">Payée</span>
+                    {% elif fact.etat_facture == 2 %}<span class="badge badge-secondary p-2">Annulé</span>
+                    {% else %}<span class="badge badge-warning p-2">En cours</span>{% endif %}
+                </div>
+                <div class="col-md-8">
+                    <form method="POST" action="{% url 'regularisation_etat' %}" class="form-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="numero_facture" value="{{ fact.numero_facture }}">
+                        <label class="mr-2 font-weight-bold">Modifier l'état</label>
+                        <select name="etat" class="form-control mr-2">
+                            <option value="0" {% if fact.etat_facture == 0 %}selected{% endif %}>En cours</option>
+                            <option value="1" {% if fact.etat_facture == 1 %}selected{% endif %}>Payée</option>
+                            <option value="2" {% if fact.etat_facture == 2 %}selected{% endif %}>Annulé</option>
+                        </select>
+                        <button type="submit" class="btn btn-outline-primary"><i class="fas fa-save"></i> Appliquer</button>
+                    </form>
+                </div>
+            </div>
+
+            <label class="font-weight-bold">Détail des règlements</label>
+            <div class="table-responsive mb-3">
+            <table class="table table-sm table-bordered mb-0">
+                <thead class="thead-light"><tr>
+                    <th>Date</th><th>Heure</th>
+                    <th class="text-right">Montant facturé</th>
+                    <th class="text-right">Encaissé</th>
+                </tr></thead>
+                <tbody>
+                {% for l in lignes %}
+                <tr>
+                    <td>{{ l.date_facture }}</td>
+                    <td>{{ l.heure_facture }}</td>
+                    <td class="text-right mono-amount">{% if l.montant_facture %}{{ l.montant_facture|fcfa }}{% else %}<span class="text-muted">acompte</span>{% endif %}</td>
+                    <td class="text-right mono-amount">{{ l.montpaye|fcfa }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-light"><th colspan="2" class="text-right">Montant facturé</th>
+                        <th class="text-right mono-amount" colspan="2">{{ fact.montant_total|fcfa }} F</th></tr>
+                    <tr class="table-light"><th colspan="2" class="text-right">Cumul encaissé</th>
+                        <th class="text-right mono-amount" colspan="2">{{ fact.cumul_paye|fcfa }} F</th></tr>
+                    <tr class="{% if deja_soldee %}table-success{% else %}table-warning{% endif %}">
+                        <th colspan="2" class="text-right">Reliquat</th>
+                        <th class="text-right mono-amount" colspan="2">{{ fact.reliquat|fcfa }} F</th></tr>
+                </tfoot>
+            </table>
+            </div>
+
+            <label class="font-weight-bold">Détails de la facture</label>
+            <div class="table-responsive mb-3">
+            <table class="table table-sm table-bordered mb-0">
+                <thead class="thead-light"><tr>
+                    <th>Article(s)</th><th class="text-right">Prix unitaire</th>
+                    <th class="text-center">Quantité</th><th class="text-right">Montant</th>
+                </tr></thead>
+                <tbody>
+                {% for d in details %}
+                <tr>
+                    <td>{{ d.article }}</td>
+                    <td class="text-right">{{ d.prix_unitaire }}</td>
+                    <td class="text-center">{{ d.nombre }}</td>
+                    <td class="text-right mono-amount">{{ d.montant|fcfa }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center text-muted">Aucun détail enregistré pour cette facture.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+
+            {% if deja_soldee %}
+            <div class="alert alert-info mb-0"><i class="fas fa-info-circle"></i> Cette facture est déjà soldée. Aucune régularisation nécessaire.</div>
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-balance-scale"></i> La régularisation va enregistrer un ajustement de
+                <strong>{{ fact.reliquat|fcfa }} F</strong> et passer la facture à l'état <strong>« Payée »</strong>.
+                Cette action équilibre les comptes et n'est pas réversible depuis l'interface.
+            </div>
+            <form method="POST" action="{% url 'regularisation_valider' %}" onsubmit="return confirm('Confirmer la régularisation de la facture {{ fact.numero_facture }} ?');">
+                {% csrf_token %}
+                <input type="hidden" name="numero_facture" value="{{ fact.numero_facture }}">
+                <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Régulariser (solder la facture)</button>
+            </form>
+            {% endif %}
+
+            <hr>
+            <div class="alert alert-danger mb-2">
+                <i class="fas fa-trash"></i> <strong>Suppression définitive.</strong>
+                Cette action supprime la facture <strong>{{ fact.numero_facture }}</strong>
+                (toutes ses lignes de règlement) <strong>et ses détails</strong> affichés ci-dessus.
+                Elle est irréversible.
+            </div>
+            <form method="POST" action="{% url 'regularisation_supprimer' %}"
+                  onsubmit="return confirm('Supprimer DÉFINITIVEMENT la facture {{ fact.numero_facture }} et ses détails ? Cette action est irréversible.');">
+                {% csrf_token %}
+                <input type="hidden" name="numero_facture" value="{{ fact.numero_facture }}">
+                <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Supprimer la facture et ses détails</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ====================== ONGLET 2 : VÉRIFICATION ====================== -->
+<div class="tab-pane fade {% if tab == 'verif' %}show active{% endif %}" id="pane-verif" role="tabpanel">
+
+    {% if request.GET.corr %}
+    <div class="alert alert-success"><i class="fas fa-check-circle"></i> Montant de la facture corrigé (aligné sur la somme des détails).</div>
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Contrôle facture ↔ détails</h6>
+            <form method="GET" action="{% url 'regularisation' %}" class="form-inline">
+                <input type="hidden" name="tab" value="verif">
+                <label class="mr-2 font-weight-bold">Année</label>
+                <select name="annee" class="form-control form-control-lg mr-2"
+                        style="height:48px;min-width:160px;font-size:1.05rem;"
+                        onchange="this.form.submit()">
+                    <option value="">Toutes les années</option>
+                    {% for an in annees %}
+                    <option value="{{ an }}" {% if annee == an|stringformat:'s' %}selected{% endif %}>{{ an }}</option>
+                    {% endfor %}
+                </select>
+                <span class="small text-muted">{{ nb_verif }} facture(s) · <span class="text-danger font-weight-bold">{{ nb_ecarts }} écart(s)</span></span>
+            </form>
+        </div>
+        <div class="card-body">
+        <div class="mb-3">
+            <div class="input-group input-group-sm" style="max-width:360px">
+                <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-search"></i></span></div>
+                <input type="text" id="verifSearch" class="form-control" oninput="rechercheVerif()"
+                       placeholder="Rechercher dans le(s) mois déplié(s) : n° ou client">
+            </div>
+            <small class="text-muted">Dépliez un mois, puis filtrez ses factures ici.</small>
+        </div>
+        <div class="table-responsive">
+        <table class="table table-bordered" width="100%">
+            <thead><tr>
+                <th>N° Facture</th><th>Date</th><th>Client</th>
+                <th class="text-right">Montant facturé</th>
+                <th class="text-right">Σ Détails</th>
+                <th class="text-right">Écart</th>
+                <th class="text-center">État</th>
+                <th class="text-center">Action</th>
+            </tr></thead>
+            <tbody>
+            {% for grp in mois_groups %}
+            <tr class="table-secondary mois-header" onclick="toggleMois('grp-{{ forloop.counter }}', this)" style="cursor:pointer">
+                <th colspan="8">
+                    <button type="button" class="btn btn-sm btn-outline-dark py-0 px-2 mois-signe">+</button>
+                    <i class="fas fa-calendar-alt ml-1"></i> {{ grp.label }}
+                    <span class="badge badge-secondary ml-2">{{ grp.nb }} facture(s)</span>
+                    {% if grp.ecarts %}<span class="badge badge-danger ml-1">{{ grp.ecarts }} écart(s)</span>{% endif %}
+                </th>
+            </tr>
+            {% for v in grp.factures %}
+            <tr class="grp-{{ forloop.parentloop.counter }} mois-row {% if not v.ok %}table-danger{% endif %}" style="display:none">
+                <td class="font-weight-bold">{{ v.numero_facture }}</td>
+                <td>{{ v.date_facture }}</td>
+                <td>{{ v.prenom_nom }}</td>
+                <td class="text-right mono-amount">{{ v.montant_facture|fcfa }}</td>
+                <td class="text-right mono-amount">{{ v.total_details|fcfa }}</td>
+                <td class="text-right mono-amount">{{ v.ecart|fcfa }}</td>
+                <td class="text-center">
+                    {% if v.ok %}<span class="badge badge-success">OK</span>
+                    {% else %}<span class="badge badge-danger">Écart</span>{% endif %}
+                </td>
+                <td class="text-center">
+                    {% if not v.ok %}
+                    <form method="POST" action="{% url 'regularisation_corriger' %}" class="d-inline"
+                          onsubmit="return confirm('Aligner le montant de la facture {{ v.numero_facture }} sur la somme des détails ({{ v.total_details|fcfa }} F) ?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="id_facture" value="{{ v.id_facture }}">
+                        <input type="hidden" name="annee" value="{{ annee }}">
+                        <button type="submit" class="btn btn-sm btn-warning" title="Corriger"><i class="fas fa-wrench"></i> Corriger</button>
+                    </form>
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% empty %}
+            <tr><td colspan="8" class="text-center text-muted">Aucune facture pour ce filtre.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="d-flex justify-content-between align-items-center mt-2">
+            <span class="small text-muted">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?tab=verif&annee={{ annee }}&page=1">&laquo;</a></li>
+                <li class="page-item"><a class="page-link" href="?tab=verif&annee={{ annee }}&page={{ page_obj.previous_page_number }}">Précédent</a></li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+                {% for n in page_obj.paginator.page_range %}
+                    {% if n >= page_obj.number|add:'-2' and n <= page_obj.number|add:'2' %}
+                    <li class="page-item {% if n == page_obj.number %}active{% endif %}"><a class="page-link" href="?tab=verif&annee={{ annee }}&page={{ n }}">{{ n }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?tab=verif&annee={{ annee }}&page={{ page_obj.next_page_number }}">Suivant</a></li>
+                <li class="page-item"><a class="page-link" href="?tab=verif&annee={{ annee }}&page={{ page_obj.paginator.num_pages }}">&raquo;</a></li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ====================== ONGLET 3 : ARCHIVAGE ====================== -->
+<div class="tab-pane fade {% if tab == 'arch' %}show active{% endif %}" id="pane-arch" role="tabpanel">
+    {% if request.GET.archive %}
+    <div class="alert alert-success"><i class="fas fa-check-circle"></i> {{ request.GET.archive }} facture(s) soldée(s) de {{ request.GET.an }} archivée(s) et retirée(s) de la base active.</div>
+    {% endif %}
+    {% if request.GET.archerr %}
+    <div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Échec de l'archivage. Vérifiez que les tables d'archive existent (script <code>creer_tables_archive.sql</code>). Aucune donnée n'a été supprimée.</div>
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Archiver les factures soldées d'une année</h6></div>
+        <div class="card-body">
+            <p class="text-muted">L'archivage <strong>déplace</strong> les factures entièrement soldées (reliquat = 0) de l'année choisie vers les tables d'archive, pour alléger la base. Elles restent consultables ci-dessous.</p>
+            <form method="GET" action="{% url 'regularisation' %}" class="form-inline mb-3">
+                <input type="hidden" name="tab" value="arch">
+                <label class="mr-2 font-weight-bold">Année</label>
+                <select name="annee_arch" class="form-control mr-2" onchange="this.form.submit()">
+                    {% for an in annees %}<option value="{{ an }}" {% if an == annee_arch %}selected{% endif %}>{{ an }}</option>{% endfor %}
+                </select>
+                <button type="submit" class="btn btn-outline-primary"><i class="fas fa-search"></i> Analyser {{ annee_arch }}</button>
+            </form>
+            {% if arch_nb is not None %}
+                {% if arch_nb %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-archive"></i> <strong>{{ arch_nb }}</strong> facture(s) soldée(s) de <strong>{{ annee_arch }}</strong> peuvent être archivées.
+                </div>
+                <form method="POST" action="{% url 'regularisation_archiver' %}"
+                      onsubmit="return confirm('Archiver {{ arch_nb }} facture(s) soldée(s) de {{ annee_arch }} ? Elles seront déplacées hors de la base active (consultables dans les archives).');">
+                    {% csrf_token %}
+                    <input type="hidden" name="annee_arch" value="{{ annee_arch }}">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-archive"></i> Archiver {{ annee_arch }}</button>
+                </form>
+                {% else %}
+                <div class="alert alert-info mb-0">Aucune facture soldée à archiver pour {{ annee_arch }}.</div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Archives existantes</h6></div>
+        <div class="card-body">
+            {% if archives %}
+            <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="thead-light"><tr><th>Année</th><th class="text-right">Factures</th><th class="text-right">Montant</th><th class="text-center">Consulter</th></tr></thead>
+                <tbody>
+                {% for a in archives %}
+                <tr>
+                    <td class="font-weight-bold">{{ a.an }}</td>
+                    <td class="text-right">{{ a.nb }}</td>
+                    <td class="text-right mono-amount">{{ a.montant|fcfa }} F</td>
+                    <td class="text-center"><a class="btn btn-sm btn-info" href="{% url 'regularisation_archives' %}?annee={{ a.an }}"><i class="fas fa-eye"></i> Consulter</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0">Aucune archive pour le moment (ou tables d'archive non encore créées).</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var moisEtat = {};   // grp -> déplié (true/false)
+
+function _filtreTexte(){
+    var el = document.getElementById('verifSearch');
+    return el ? (el.value || '').trim().toLowerCase() : '';
+}
+function _rafraichirGrp(grp){
+    var q = _filtreTexte();
+    var ouvert = !!moisEtat[grp];
+    document.querySelectorAll('tr.' + grp).forEach(function(r){
+        var visible = ouvert && (q === '' || r.textContent.toLowerCase().indexOf(q) >= 0);
+        r.style.display = visible ? '' : 'none';
+    });
+}
+function toggleMois(grp, header){
+    moisEtat[grp] = !moisEtat[grp];
+    _rafraichirGrp(grp);
+    var signe = header.querySelector('.mois-signe');
+    if (signe) signe.textContent = moisEtat[grp] ? '−' : '+';   // − / +
+}
+function rechercheVerif(){
+    // La recherche ne s'applique qu'aux mois dépliés.
+    Object.keys(moisEtat).forEach(function(grp){
+        if (moisEtat[grp]) _rafraichirGrp(grp);
+    });
+}
+</script>
+{% endblock %}

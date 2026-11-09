@@ -1,0 +1,12 @@
+# Servir les fichiers statiques directement (après `collectstatic`),
+# et déléguer le reste à l'application Python (Passenger).
+# Sur cPanel, l'app Python est généralement montée automatiquement ;
+# ce fichier n'est utile que si vous placez le projet à la racine web.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Ne pas réécrire les fichiers réellement présents (assets)
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+</IfModule>

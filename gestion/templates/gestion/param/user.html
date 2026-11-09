@@ -1,0 +1,56 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Utilisateurs{% endblock %}
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">Utilisateurs</h1>
+        <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Paramètres</span> <i class="fas fa-chevron-right"></i> <span>Utilisateurs</span></nav>
+    </div>
+    <button class="btn btn-info btn-sm shadow-sm" data-toggle="modal" data-target="#modalU">
+        <i class="fas fa-plus fa-sm"></i> Nouvel utilisateur</button>
+</div>
+
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-primary"><i class="fas fa-users"></i></div>
+        <div class="stat-label">Total utilisateurs</div><div class="stat-value">{{ utilisateurs|length }}</div>
+    </div></div></div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Liste des utilisateurs</h6></div>
+    <div class="card-body"><div class="table-responsive">
+    <table class="table" id="dataTable" width="100%">
+        <thead><tr><th>Utilisateur</th><th>Mot de passe</th><th>Profil</th></tr></thead>
+        <tbody>
+        {% for u in utilisateurs %}
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    <span class="avatar {% cycle 'av1' 'av2' 'av3' 'av4' 'av5' %}">{{ u.login|initiales }}</span>
+                    <span class="ml-2 cust-name">{{ u.login }}</span>
+                </div>
+            </td>
+            <td><span class="text-muted">••••••</span></td>
+            <td><span class="badge badge-teal">{{ u.nomprofil }}</span></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div></div>
+</div>
+
+<div class="modal fade" id="modalU" role="dialog"><div class="modal-dialog"><div class="modal-content">
+<form method="POST" action="{% url 'utilisateur_insert' %}">{% csrf_token %}
+<div class="modal-header"><h5 class="modal-title">Nouvel utilisateur</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+<div class="modal-body">
+    <div class="form-group"><label>Login</label><input name="login" class="form-control" required></div>
+    <div class="form-group"><label>Mot de passe</label><input name="password" class="form-control" required></div>
+    <div class="form-group"><label>Profil</label>
+        <select name="nomprofil" class="form-control">{% for p in profils %}<option value="{{ p.id_profil }}">{{ p.nomprofil }}</option>{% endfor %}</select></div>
+</div>
+<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+<button type="submit" class="btn btn-success" name="bt_user">Enregistrer</button></div>
+</form></div></div></div>
+{% endblock %}

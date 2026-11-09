@@ -1,0 +1,96 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Tailleurs{% endblock %}
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">Tailleurs</h1>
+        <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Marquage</span> <i class="fas fa-chevron-right"></i> <span>Tailleurs</span></nav>
+    </div>
+    <button class="btn btn-info btn-sm shadow-sm" data-toggle="modal" data-target="#modalT">
+        <i class="fas fa-plus fa-sm"></i> Nouveau tailleur</button>
+</div>
+
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-primary"><i class="fas fa-users-cog"></i></div>
+        <div class="stat-label">Total tailleurs</div><div class="stat-value">{{ nb_total }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon ia-blue"><i class="fas fa-cut"></i></div>
+        <div class="stat-label">Tailleurs simples</div><div class="stat-value">{{ nb_simple }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon ia-purple"><i class="fas fa-feather-alt"></i></div>
+        <div class="stat-label">Brodeurs</div><div class="stat-value">{{ nb_brodeur }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon ia-amber"><i class="fas fa-circle"></i></div>
+        <div class="stat-label">Boutonniers</div><div class="stat-value">{{ nb_bouton }}</div>
+    </div></div></div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Liste des tailleurs</h6>
+        <ul class="nav nav-pills filter-tabs" id="filterType">
+            <li class="nav-item"><a href="#" class="nav-link active" data-type="">Tous</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-type="Tailleur simple">Simples</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-type="Brodeur">Brodeurs</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-type="Boutonnier">Boutonniers</a></li>
+        </ul>
+    </div>
+    <div class="card-body"><div class="table-responsive">
+    <table class="table" id="dataTable" width="100%">
+        <thead><tr><th>Tailleur</th><th>Type</th></tr></thead>
+        <tbody>
+        {% for t in tailleurs %}
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    <span class="avatar {% cycle 'av1' 'av2' 'av3' 'av4' 'av5' %}">{{ t.prenom_nom|initiales }}</span>
+                    <span class="ml-2 cust-name">{{ t.prenom_nom }}</span>
+                </div>
+            </td>
+            <td>
+                {% if t.type_tailleur|lower|slice:":4" == "brod" %}<span class="badge badge-purple">Brodeur</span>
+                {% elif t.type_tailleur|lower|slice:":6" == "bouton" %}<span class="badge badge-amber">Boutonnier</span>
+                {% else %}<span class="badge badge-blue">Tailleur simple</span>{% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div></div>
+</div>
+
+<div class="modal fade" id="modalT" role="dialog"><div class="modal-dialog"><div class="modal-content">
+<form method="POST" action="{% url 'tailleur_insert' %}">{% csrf_token %}
+<div class="modal-header"><h5 class="modal-title">Nouveau tailleur</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+<div class="modal-body">
+    <div class="form-group"><label>Prénom &amp; Nom</label><input name="prenom_nom" class="form-control" required></div>
+    <div class="form-group"><label>Type</label>
+        <select name="type_tailleur" class="form-control">
+            <option value="Tailleur simple">Tailleur simple</option>
+            <option value="Brodeur">Brodeur</option>
+            <option value="Boutonnier">Boutonnier</option>
+        </select></div>
+</div>
+<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+<button type="submit" class="btn btn-success" name="bt_tailleur">Enregistrer</button></div>
+</form></div></div></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function () {
+    var table = $('#dataTable').DataTable();
+    $('#filterType a').on('click', function (e) {
+        e.preventDefault();
+        $('#filterType a').removeClass('active'); $(this).addClass('active');
+        var v = $(this).data('type');
+        table.column(1).search(v ? v : '', false, false).draw();
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "gestion/base.html" %}
+{% load fcfa %}
+{% block titre %}Factures{% endblock %}
+{% block contenu %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">Factures</h1>
+        <nav class="page-breadcrumb"><span>S.B.M</span> <i class="fas fa-chevron-right"></i> <span>Facturation</span></nav>
+    </div>
+    <div class="d-flex align-items-center">
+        <form method="GET" class="form-inline mr-3">
+            <label class="mr-2 font-weight-bold">Année</label>
+            <select name="annee" class="form-control" onchange="this.form.submit()">
+                {% for an in annees %}<option value="{{ an }}" {% if an == annee %}selected{% endif %}>{{ an }}</option>{% endfor %}
+            </select>
+        </form>
+        {% if session_profil != 6 %}
+        <a href="{% url 'panier_client' %}" class="btn btn-info btn-sm shadow-sm"><i class="fas fa-plus fa-sm"></i> Nouvelle facture</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-primary"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div class="stat-label">Total facturé {{ annee }}</div><div class="stat-value">{{ total_facture|fcfa }} <small>F</small></div>
+        <div class="stat-foot"><i class="fas fa-receipt"></i> {{ nb_total }} facture(s) en {{ annee }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-success"><i class="fas fa-hand-holding-usd"></i></div>
+        <div class="stat-label">Encaissé</div><div class="stat-value">{{ total_encaisse|fcfa }} <small>F</small></div>
+        <div class="stat-foot text-danger">Reste {{ reliquat|fcfa }} F</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-teal"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-label">Payées</div><div class="stat-value">{{ nb_payees }}</div>
+    </div></div></div>
+    <div class="col-xl-3 col-md-6 mb-4"><div class="card stat-card h-100"><div class="card-body">
+        <div class="stat-icon stat-icon-warning"><i class="fas fa-hourglass-half"></i></div>
+        <div class="stat-label">En cours</div><div class="stat-value">{{ nb_impayees }}</div>
+    </div></div></div>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Liste des factures</h6>
+        <ul class="nav nav-pills filter-tabs" id="filterEtat">
+            <li class="nav-item"><a href="#" class="nav-link active" data-etat="">Toutes</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-etat="Payée">Payées</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" data-etat="En cours">En cours</a></li>
+        </ul>
+    </div>
+    <div class="card-body"><div class="table-responsive">
+    <table class="table" id="dataTable" width="100%">
+        <thead><tr><th>N° Facture</th><th>Client</th><th>Date</th><th>Montant</th><th>Encaissé</th><th>Remise</th><th>Reliquat</th><th>État</th><th class="text-center">PDF</th></tr></thead>
+        <tbody>
+        {% for f in factures %}
+        <tr>
+            <td class="font-weight-bold" {% if not f.equilibre %}style="background-color:#ff9800;color:#fff;" title="Déséquilibre : montant ≠ encaissé + remise"{% endif %}>{{ f.numero_facture }}</td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <span class="avatar {% cycle 'av1' 'av2' 'av3' 'av4' 'av5' %}">{{ f.prenom_nom|initiales }}</span>
+                    <span class="ml-2 cust-name">{{ f.prenom_nom }}</span>
+                </div>
+            </td>
+            <td>{{ f.date_facture }}</td>
+            <td class="mono-amount">{{ f.montant_facture|fcfa }}</td>
+            <td class="mono-amount">{{ f.cumul_paye|fcfa }}</td>
+            <td class="mono-amount">{{ f.remise|fcfa }}</td>
+            <td class="mono-amount">{{ f.reliquat|fcfa }}</td>
+            <td>{% if f.etat_facture == 1 %}<span class="badge badge-success">Payée</span>{% else %}<span class="badge badge-warning">En cours</span>{% endif %}</td>
+            <td class="text-center actions-cell">
+                <a href="{% url 'facture_pdf' f.id_facture %}" target="_blank" title="PDF" class="text-danger"><i class="fas fa-file-pdf"></i></a>
+                <a href="{% url 'facture_pdf_sans_mesures' f.id_facture %}" title="PDF sans mesures (client)" class="text-secondary ml-2"><i class="fas fa-download"></i></a>
+                {% if f.telephone %}
+                <a href="{% url 'facture_whatsapp' f.id_facture %}" target="_blank" rel="noopener" title="Envoyer par WhatsApp" class="text-success ml-2"><i class="fab fa-whatsapp"></i></a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function () {
+    var table = $('#dataTable').DataTable();
+    $('#filterEtat a').on('click', function (e) {
+        e.preventDefault();
+        $('#filterEtat a').removeClass('active'); $(this).addClass('active');
+        var s = $(this).data('etat');
+        table.column(7).search(s ? ('^' + s + '$') : '', true, false).draw();
+    });
+});
+</script>
+{% endblock %}
