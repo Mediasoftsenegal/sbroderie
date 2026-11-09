@@ -14,6 +14,17 @@ if BASE_DIR not in sys.path:
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sbroderie.settings")
 
+# Secrets de production (ex. DB_PASSWORD) : fichier HORS du dossier web, sur le
+# serveur uniquement, format CLE=valeur. Les variables déjà définies gardent la priorité.
+ENV_FILE = os.path.expanduser("~/.sbroderie_env")
+if os.path.isfile(ENV_FILE):
+    with open(ENV_FILE, encoding="utf-8") as _f:
+        for _ligne in _f:
+            _ligne = _ligne.strip()
+            if _ligne and not _ligne.startswith("#") and "=" in _ligne:
+                _cle, _val = _ligne.split("=", 1)
+                os.environ.setdefault(_cle.strip(), _val)
+
 from django.core.wsgi import get_wsgi_application  # noqa: E402
 
 application = get_wsgi_application()
