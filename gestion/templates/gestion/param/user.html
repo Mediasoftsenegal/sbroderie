@@ -22,7 +22,7 @@
     <div class="card-header"><h6 class="m-0 font-weight-bold text-primary">Liste des utilisateurs</h6></div>
     <div class="card-body"><div class="table-responsive">
     <table class="table" id="dataTable" width="100%">
-        <thead><tr><th>Utilisateur</th><th>Mot de passe</th><th>Profil</th></tr></thead>
+        <thead><tr><th>Utilisateur</th><th>Mot de passe</th><th>Profil</th><th></th></tr></thead>
         <tbody>
         {% for u in utilisateurs %}
         <tr>
@@ -34,12 +34,40 @@
             </td>
             <td><span class="text-muted">••••••</span></td>
             <td><span class="badge badge-teal">{{ u.nomprofil }}</span></td>
+            <td class="text-right">
+                <button type="button" class="btn btn-warning btn-sm btn-mdp"
+                        data-id="{{ u.id_user }}" data-login="{{ u.login }}"
+                        data-toggle="modal" data-target="#modalMdp">
+                    <i class="fas fa-key fa-sm"></i> Changer le mot de passe</button>
+            </td>
         </tr>
         {% endfor %}
         </tbody>
     </table>
     </div></div>
 </div>
+
+<div class="modal fade" id="modalMdp" role="dialog"><div class="modal-dialog"><div class="modal-content">
+<form method="POST" id="formMdp" action="{% url 'utilisateur' %}">{% csrf_token %}
+<div class="modal-header"><h5 class="modal-title">Changer le mot de passe de <span id="mdpLogin"></span></h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+<div class="modal-body">
+    <div class="form-group"><label>Nouveau mot de passe</label><input type="password" name="nouveau_mdp" class="form-control" minlength="4" required autocomplete="new-password"></div>
+    <div class="form-group"><label>Confirmer le mot de passe</label><input type="password" name="confirmation_mdp" class="form-control" minlength="4" required autocomplete="new-password"></div>
+</div>
+<div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+<button type="submit" class="btn btn-warning">Enregistrer</button></div>
+</form></div></div></div>
+
+<script>
+$(function () {
+    var base = "{% url 'utilisateur' %}";
+    $(document).on("click", ".btn-mdp", function () {
+        $("#formMdp").attr("action", base + $(this).data("id") + "/mot-de-passe/");
+        $("#mdpLogin").text($(this).data("login"));
+        $("#formMdp")[0].reset();
+    });
+});
+</script>
 
 <div class="modal fade" id="modalU" role="dialog"><div class="modal-dialog"><div class="modal-content">
 <form method="POST" action="{% url 'utilisateur_insert' %}">{% csrf_token %}

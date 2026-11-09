@@ -88,4 +88,6 @@ urlpatterns = [
     path("profil/ajouter/", views.profil_insert, name="profil_insert"),
     path("utilisateur/", views.utilisateur, name="utilisateur"),
     path("utilisateur/ajouter/", views.utilisateur_insert, name="utilisateur_insert"),
+    path("utilisateur/<int:id_user>/mot-de-passe/", views.utilisateur_mot_de_passe,
+         name="utilisateur_mot_de_passe"),
 ]

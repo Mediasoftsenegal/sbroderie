@@ -1455,6 +1455,28 @@ def utilisateur_insert(request):
     return redirect("utilisateur")
 
 
+@profils_autorises(1)
+def utilisateur_mot_de_passe(request, id_user):
+    """Réservé à l'administrateur : change le mot de passe d'un autre utilisateur."""
+    if request.method != "POST":
+        return redirect("utilisateur")
+    cible = User.objects.filter(id_user=id_user).first()
+    if cible is None:
+        messages.error(request, "Utilisateur introuvable.")
+        return redirect("utilisateur")
+    nouveau = request.POST.get("nouveau_mdp", "")
+    confirmation = request.POST.get("confirmation_mdp", "")
+    if len(nouveau) < 4:
+        messages.error(request, "Le mot de passe doit comporter au moins 4 caractères.")
+    elif nouveau != confirmation:
+        messages.error(request, "Les deux mots de passe ne correspondent pas.")
+    else:
+        # Même convention que la création d'utilisateur (table partagée avec l'app PHP).
+        User.objects.filter(id_user=id_user).update(password=nouveau)
+        messages.success(request, f"Mot de passe de « {cible.login} » modifié.")
+    return redirect("utilisateur")
+
+
 # ===========================================================================
 # TABLEAU DE BORD (statistiques)
 # ===========================================================================
